@@ -46,7 +46,7 @@ const DATA_MENU = [
     ]
   },
   {
-    key: "organizationManagement",
+    key: "organization-management",
     name: "Quản lý đơn vị và nhân sự",
     label: "Quản lý đơn vị và nhân sự",
     icon: <VscOrganization size={ICON_SIZE} />,
@@ -56,7 +56,7 @@ const DATA_MENU = [
         name: "Quản lý người dùng",
         components: <Users />,
         label: (
-          <Link className="menu-items" to={"/organizationManagement/users"}>
+          <Link className="menu-items" to={"/organization-management/users"}>
             Quản lý người dùng
           </Link>
         ),
@@ -67,7 +67,7 @@ const DATA_MENU = [
         name: "Quản lý đơn vị/phòng ban",
         components: <Units />,
         label: (
-          <Link className="menu-items" to={"/organizationManagement/units"}>
+          <Link className="menu-items" to={"/organization-management/units"}>
             Quản lý đơn vị/phòng ban
           </Link>
         ),
@@ -78,7 +78,7 @@ const DATA_MENU = [
         name: "Quản lý chức vụ/chức danh",
         components: <Users />,
         label: (
-          <Link className="menu-items" to={"/organizationManagement/positions"}>
+          <Link className="menu-items" to={"/organization-management/positions"}>
             Quản lý chức vụ/chức danh
           </Link>
         ),
