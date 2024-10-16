@@ -1,9 +1,13 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { ConfigProvider, Layout } from "antd";
+import { Layout } from "antd";
 
-import HeaderCustom from "./components/HeaderCustom";
-import SidebarCustom from "./components/SidebarCustom";
+import Main from "./components/Layout/Main.jsx";
 import DATA_MENU from "./utils/menuData.jsx";
+
+import "antd/dist/reset.css";
+import "./assets/styles/main.css";
+import "./assets/styles/responsive.css";
+import "./index.css";
 
 const App = () => {
   const { Footer, Content } = Layout;
@@ -20,18 +24,17 @@ const App = () => {
   };
 
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          borderRadius: 2
-        }
-      }}
-    >
+    <div className="App">
       <BrowserRouter>
+        <Main>
+          <Routes>{createRoutes(DATA_MENU)}</Routes>
+        </Main>
+      </BrowserRouter>
+      {/* <BrowserRouter>
         <Layout style={{ minHeight: "100vh", fontSize: 16 }}>
           <HeaderCustom />
           <Layout style={{ marginTop: "8vh" }}>
-            <SidebarCustom />
+            <SideNav color={"#1890ff"} />
             <Content
               style={{
                 marginLeft: "15%",
@@ -47,8 +50,8 @@ const App = () => {
             zanduc {`<3`}
           </Footer>
         </Layout>
-      </BrowserRouter>
-    </ConfigProvider>
+      </BrowserRouter> */}
+    </div>
   );
 };
 

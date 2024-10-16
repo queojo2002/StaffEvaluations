@@ -1,17 +1,28 @@
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 .menu-items {
   display: inline-block;
   width: 120px;
   white-space: normal;
   line-height: normal;
   word-spacing: normal;
-  padding: 0px;
 }  
+
+.menu-item-label {
+  color: #8c8c8c;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  margin-left: -13px;
+  white-space: normal;
+  line-height: normal;
+  word-spacing: normal;
+}
+
+.truncate-label {
+  width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

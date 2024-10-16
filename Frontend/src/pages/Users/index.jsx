@@ -1,10 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { AiFillEdit } from "react-icons/ai";
 import { FaEye } from "react-icons/fa";
+import { GrSearch } from "react-icons/gr";
+import { IoMdAddCircle } from "react-icons/io";
+import { IoFilterSharp } from "react-icons/io5";
+import { RiDeleteBin2Fill } from "react-icons/ri";
 import { LoadingOutlined } from "@ant-design/icons";
-import { Button, Divider, Flex, Spin, Table, Tooltip, Typography } from "antd";
+import { Button, Card, Divider, Flex, Input, Modal, Spin, Table, Tooltip, Typography } from "antd";
 
 import Breadcrumbs from "../../components/Breadcrumbs";
+
+import User from "./_id";
+import AddNewUser from "./AddNewUser";
 
 const dataSource = [
   {
@@ -142,30 +149,39 @@ const dataSource = [
 ];
 
 const Users = () => {
-  const { Title, Text } = Typography;
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { Text, Title } = Typography;
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
+  const [userId, setUserId] = useState(null);
   const hasSelected = selectedRowKeys.length > 0;
 
-  const handleViewDetail = (id) => {};
-  const handleEdit = (id) => {};
   const onSelectChange = (newSelectedRowKeys) => {
     setSelectedRowKeys(newSelectedRowKeys);
-  };
-
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
   };
 
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange
+  };
+
+  const handleButtonAddNew = () => {
+    setIsAddNewModalOpen(true);
+  };
+
+  const handleButtonEdit = (id) => {};
+
+  const handleButtonDelete = () => {
+    console.log(selectedRowKeys);
+    setSelectedRowKeys([]);
+  };
+
+  const handleButtonViewDetail = (id) => {
+    setUserId(id);
+    setIsUserModalOpen(true);
   };
 
   const columns = [
@@ -219,23 +235,19 @@ const Users = () => {
         <Flex align="center" justify="flex-start" gap={10}>
           <Tooltip title="Xem chi tiết">
             <Button
-              type="primary"
-              style={{ backgroundColor: "black" }}
-              shape="circle"
-              icon={<FaEye />}
+              style={{ borderRadius: 10 }}
+              icon={<FaEye style={{ padding: 0, margin: "auto", fontSize: 15 }} />}
               onClick={() => {
-                handleViewDetail(record.id);
+                handleButtonViewDetail(record.id);
               }}
             />
           </Tooltip>
           <Tooltip title="Chỉnh sửa">
             <Button
-              type="primary"
-              style={{ backgroundColor: "#13c2c2" }}
-              shape="circle"
-              icon={<AiFillEdit />}
+              style={{ borderRadius: 10 }}
+              icon={<AiFillEdit style={{ padding: 0, margin: "auto", fontSize: 15 }} />}
               onClick={() => {
-                handleEdit(record.id);
+                handleButtonEdit(record.id);
               }}
             />
           </Tooltip>
@@ -245,6 +257,9 @@ const Users = () => {
   ];
 
   const propsTable = {
+    scroll: {
+      x: 800
+    },
     rowKey: "id",
     rowSelection: {
       ...rowSelection,
@@ -257,24 +272,85 @@ const Users = () => {
     size: "middle"
   };
 
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setLoading(false);
+  //   }, 1000);
+  // }, []);
 
   return (
     <Spin spinning={loading} indicator={<LoadingOutlined spin />}>
-      <Title level={3}>Quản lý người dùng</Title>
+      <Modal
+        title="User Details"
+        open={isUserModalOpen}
+        onOk={() => {}}
+        onCancel={() => {
+          setIsUserModalOpen(false);
+        }}
+        footer={null}
+      >
+        <User id={userId} />
+      </Modal>
+      <Modal
+        title="Thêm mới người dùng"
+        open={isAddNewModalOpen}
+        onOk={() => {}}
+        onCancel={() => {
+          setIsAddNewModalOpen(false);
+        }}
+        footer={null}
+      >
+        <AddNewUser id={userId} />
+      </Modal>
       <Breadcrumbs />
       <Divider />
       <Flex gap="middle" vertical>
-        <Flex align="center" gap="middle">
-          <Button danger type="primary" onClick={start} disabled={!hasSelected} loading={loading}>
-            {hasSelected ? `Xoá ${selectedRowKeys.length} mục này` : "Xoá"}
-          </Button>
+        <Flex align="center" gap={10} justify="space-between" style={{ width: "100%" }}>
+          <Flex align="center" gap={5} justify="flex-start">
+            <Button
+              type="primary"
+              onClick={handleButtonAddNew}
+              loading={loading}
+              style={{ borderRadius: 10, fontSize: 12, height: 40, padding: "0 15px" }}
+              icon={<IoMdAddCircle style={{ paddingTop: 2, fontSize: 18 }} />}
+            >
+              Thêm mới
+            </Button>
+            <Button
+              danger
+              type="primary"
+              onClick={handleButtonDelete}
+              disabled={!hasSelected}
+              loading={loading}
+              style={{ borderRadius: 10, fontSize: 12, height: 40, padding: "0 15px" }}
+              icon={<RiDeleteBin2Fill style={{ paddingTop: 2, fontSize: 18 }} />}
+            >
+              {hasSelected ? `Xoá ${selectedRowKeys.length} mục này` : "Xoá"}
+            </Button>
+          </Flex>
+          <Flex align="center" gap={5} justify="flex-end" style={{ width: "100%" }}>
+            <Tooltip title="Khi nhập xong bạn cần chờ 1-2s để hệ thống tìm kiếm dữ liệu nhé!">
+              <Input
+                style={{ borderRadius: 10, fontSize: 14, width: "30%", height: 40 }}
+                placeholder="Tìm kiếm mọi thứ ở đây..."
+                suffix={<GrSearch style={{ fontSize: 18, paddingRight: 2 }} />}
+                allowClear
+              />
+            </Tooltip>
+
+            <Button
+              onClick={() => {}}
+              loading={loading}
+              style={{ borderRadius: 10, fontSize: 12, height: 40, padding: 15, fontWeight: "bold" }}
+              icon={<IoFilterSharp style={{ paddingTop: 2, fontSize: 18 }} />}
+            >
+              Lọc
+            </Button>
+          </Flex>
         </Flex>
-        <Table {...propsTable} />
+        <Card bordered={false} className="criclebox">
+          <Table {...propsTable} />
+        </Card>
       </Flex>
     </Spin>
   );

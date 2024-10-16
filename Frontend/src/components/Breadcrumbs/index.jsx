@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Breadcrumb } from "antd";
+import { animateScroll as scroll } from "react-scroll";
+import { Breadcrumb, Typography } from "antd";
 
 import DATA_MENU from "../../utils/menuData";
 
@@ -19,7 +20,10 @@ const findRouteName = (pathname, menu) => {
 };
 
 const Breadcrumbs = () => {
+  const { Title } = Typography;
   const location = useLocation();
+  const [titleName, setTitleName] = useState("");
+  const [breadcrumbItems, setBreadcrumbItems] = useState([]);
 
   const crumbs = () => {
     const path = location.pathname.split("/");
@@ -34,10 +38,27 @@ const Breadcrumbs = () => {
       title: "Admin"
     });
 
-    return listPath;
+    const last = listPath[listPath.length - 1];
+
+    document.title = last.title;
+
+    scroll.scrollToTop({ duration: 500 });
+
+    setTitleName(last.title);
+
+    setBreadcrumbItems(listPath);
   };
 
-  return <Breadcrumb style={{ margin: "16px 0px" }} items={crumbs()} />;
+  useEffect(() => {
+    crumbs();
+  }, [location]);
+
+  return (
+    <>
+      <Title level={3}>{titleName}</Title>
+      <Breadcrumb style={{ margin: "16px 0px" }} items={breadcrumbItems} />
+    </>
+  );
 };
 
 export default Breadcrumbs;

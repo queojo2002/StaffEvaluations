@@ -1,186 +1,197 @@
-import { CiViewList } from "react-icons/ci";
-import { GoChecklist } from "react-icons/go";
-import { GrScorecard } from "react-icons/gr";
-import { HiUsers } from "react-icons/hi";
-import { MdAssessment, MdCategory, MdComment, MdDashboard, MdEvent, MdOutlineGrading } from "react-icons/md";
-import { MdApproval } from "react-icons/md";
-import { MdBarChart } from "react-icons/md";
-import { MdPieChart } from "react-icons/md";
-import { PiSubtitlesBold } from "react-icons/pi";
-import { VscOrganization } from "react-icons/vsc";
-import { Link } from "react-router-dom";
-import { DeploymentUnitOutlined } from "@ant-design/icons";
+import { NavLink } from "react-router-dom";
 
-import Units from "../pages/Units";
-import Users from "../pages/Users";
-
-const ICON_SIZE = 18;
+import Users from "../pages/Users/index";
 
 const DATA_MENU = [
   {
     key: "dashboard",
-    key: "Trang tổng quan",
+    name: "Trang tổng quan",
     label: (
-      <Link className="menu-items" to={"/dashboard"}>
-        Trang tổng quan
-      </Link>
-    ),
-    icon: <MdDashboard size={ICON_SIZE} />
+      <NavLink to="/dashboard">
+        <span className="icon" style={{}}>
+          {}
+        </span>
+        <span className="menu-items">Trang tổng quan</span>
+      </NavLink>
+    )
   },
   {
-    key: "statistics",
-    name: "Thống kê",
-    label: "Thống kê",
-    icon: <MdBarChart size={ICON_SIZE} />,
-    children: [
-      {
-        key: "evaluation-statistics",
-        components: <Users />,
-        label: (
-          <Link className="menu-items" to={"/statistics/evaluation-statistics"}>
-            Thống kê đánh giá
-          </Link>
-        ),
-        icon: <MdPieChart size={ICON_SIZE} />
-      }
-    ]
+    key: "evaluations",
+    name: "Quản lý phiếu đánh giá",
+    label: (
+      <NavLink to="/evaluations">
+        <span className="icon" style={{}}>
+          {}
+        </span>
+        <span className="menu-items">Quản lý phiếu đánh giá</span>
+      </NavLink>
+    )
+  },
+  {
+    key: "evaluations-supervisor",
+    name: "Quản lý cấp phê duyệt",
+    label: (
+      <NavLink to="/evaluations-supervisor">
+        <span className="icon" style={{}}>
+          {}
+        </span>
+        <span className="menu-items">Quản lý cấp phê duyệt</span>
+      </NavLink>
+    )
   },
   {
     key: "organization-management",
     name: "Quản lý đơn vị và nhân sự",
-    label: "Quản lý đơn vị và nhân sự",
-    icon: <VscOrganization size={ICON_SIZE} />,
+    label: (
+      <div className="menu-item-label">
+        <span className="label">Quản lý đơn vị và nhân sự</span>
+      </div>
+    ),
     children: [
       {
         key: "users",
         name: "Quản lý người dùng",
         components: <Users />,
         label: (
-          <Link className="menu-items" to={"/organization-management/users"}>
-            Quản lý người dùng
-          </Link>
-        ),
-        icon: <HiUsers size={ICON_SIZE} />
+          <NavLink to="/organization-management/users">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Quản lý người dùng</span>
+          </NavLink>
+        )
       },
       {
         key: "units",
         name: "Quản lý đơn vị/phòng ban",
-        components: <Units />,
         label: (
-          <Link className="menu-items" to={"/organization-management/units"}>
-            Quản lý đơn vị/phòng ban
-          </Link>
-        ),
-        icon: <DeploymentUnitOutlined size={ICON_SIZE} />
+          <NavLink to="/organization-management/units">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Quản lý đơn vị/phòng ban</span>
+          </NavLink>
+        )
       },
       {
         key: "positions",
         name: "Quản lý chức vụ/chức danh",
-        components: <Users />,
         label: (
-          <Link className="menu-items" to={"/organization-management/positions"}>
-            Quản lý chức vụ/chức danh
-          </Link>
-        ),
-        icon: <PiSubtitlesBold size={ICON_SIZE} />
+          <NavLink to="/organization-management/positions">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Quản lý chức vụ/chức danh</span>
+          </NavLink>
+        )
       }
     ]
   },
   {
     key: "categories",
     name: "Quản lý danh mục",
-    label: "Quản lý danh mục",
-    icon: <MdCategory size={ICON_SIZE} />,
+    label: (
+      <div className="menu-item-label">
+        <span className="label">Quản lý danh mục</span>
+      </div>
+    ),
     children: [
       {
         key: "evaluation-ratings",
         name: "Danh mục thang điểm đánh giá",
-        components: <Users />,
         label: (
-          <Link className="menu-items" to={"/categories/evaluation-ratings"}>
-            Danh mục thang điểm đánh giá
-          </Link>
-        ),
-        icon: <GrScorecard size={ICON_SIZE} />
+          <NavLink to="/categories/evaluation-ratings">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Danh mục thang điểm đánh giá</span>
+          </NavLink>
+        )
       },
       {
         key: "evaluation-criteria",
         name: "Danh mục tiêu chí đánh giá",
-        components: <Users />,
         label: (
-          <Link className="menu-items" to={"/categories/evaluation-criteria"}>
-            Danh mục tiêu chí đánh giá
-          </Link>
-        ),
-        icon: <CiViewList size={ICON_SIZE} />
+          <NavLink to="/categories/evaluation-criteria">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Danh mục tiêu chí đánh giá</span>
+          </NavLink>
+        )
       },
       {
         key: "evaluation-grading",
         name: "Danh mục xếp loại đánh giá",
-        components: <Users />,
         label: (
-          <Link className="menu-items" to={"/categories/evaluation-grading"}>
-            Danh mục xếp loại đánh giá
-          </Link>
-        ),
-        icon: <MdOutlineGrading size={ICON_SIZE} />
+          <NavLink to="/categories/evaluation-grading">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Danh mục xếp loại đánh giá</span>
+          </NavLink>
+        )
       },
       {
         key: "evaluation-pros-cons",
         name: "Danh mục ưu và nhược điểm đánh giá",
-        components: <Users />,
         label: (
-          <Link className="menu-items" to={"/categories/evaluation-pros-cons"}>
-            Danh mục ưu và nhược điểm đánh giá
-          </Link>
-        ),
-        icon: <MdAssessment size={ICON_SIZE} />
+          <NavLink to="/categories/evaluation-pros-cons">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Danh mục ưu và nhược điểm đánh giá</span>
+          </NavLink>
+        )
       },
       {
         key: "evaluation-comments",
         name: "Danh mục nhận xét đánh giá",
-        components: <Users />,
         label: (
-          <Link className="menu-items" to={"/categories/evaluation-comments"}>
-            Danh mục nhận xét đánh giá
-          </Link>
-        ),
-        icon: <MdComment size={ICON_SIZE} />
+          <NavLink to="/categories/evaluation-comments">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Danh mục nhận xét đánh giá</span>
+          </NavLink>
+        )
       },
       {
         key: "evaluation-periods",
         name: "Danh mục kỳ đánh giá",
-        components: <Users />,
         label: (
-          <Link className="menu-items" to={"/categories/evaluation-periods"}>
-            Danh mục kỳ đánh giá
-          </Link>
-        ),
-        icon: <MdEvent size={ICON_SIZE} />
+          <NavLink to="/categories/evaluation-periods">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="menu-items">Danh mục kỳ đánh giá</span>
+          </NavLink>
+        )
       }
     ]
   },
   {
-    key: "evaluations",
-    name: "Quản lý phiếu đánh giá",
-    components: <Users />,
+    key: "statistics",
+    name: "Thống kê",
     label: (
-      <Link className="menu-items" to={"/evaluations"}>
-        Quản lý phiếu đánh giá
-      </Link>
+      <span className="menu-item-label">
+        <span className="menu-items">Thống kê</span>
+      </span>
     ),
-    icon: <GoChecklist size={ICON_SIZE} />
-  },
-  {
-    key: "evaluations-supervisor",
-    name: "Quản lý cấp phê duyệt",
-    components: <Users />,
-    label: (
-      <Link className="menu-items" to={"/evaluations-supervisor"}>
-        Quản lý cấp phê duyệt
-      </Link>
-    ),
-    icon: <MdApproval size={ICON_SIZE} />
+    children: [
+      {
+        key: "evaluation-statistics",
+        name: "Thống kê đánh giá",
+        label: (
+          <NavLink to="/statistics/evaluation-statistics">
+            <span className="icon" style={{}}>
+              {}
+            </span>
+            <span className="label truncate-label">Thống kê đánh giá</span>
+          </NavLink>
+        )
+      }
+    ]
   }
 ];
 

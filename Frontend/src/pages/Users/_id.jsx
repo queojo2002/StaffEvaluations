@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 
-const User = () => {
-  useEffect(() => {
-    document.title = "User";
-  }, []);
+const User = (props) => {
+  const { id, isOpenModal } = props;
 
-  return <div>User</div>;
+  useEffect(() => {
+    console.log("User ID:", id);
+  }, [id]);
+
+  return <div>User ID: {id}</div>;
 };
 
 export default User;
