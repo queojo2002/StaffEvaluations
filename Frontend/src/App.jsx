@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "antd";
 
 import Main from "./components/Layout/Main.jsx";
+import SignIn from "./pages/SignIn/index.jsx";
 import DATA_MENU from "./utils/menuData.jsx";
 
 import "antd/dist/reset.css";
@@ -26,31 +27,12 @@ const App = () => {
   return (
     <div className="App">
       <BrowserRouter>
-        <Main>
-          <Routes>{createRoutes(DATA_MENU)}</Routes>
-        </Main>
+        <Routes>
+          <Route key="sign-in" path="/" element={<SignIn />} />
+
+          {/* <Main>{createRoutes(DATA_MENU)}</Main> */}
+        </Routes>
       </BrowserRouter>
-      {/* <BrowserRouter>
-        <Layout style={{ minHeight: "100vh", fontSize: 16 }}>
-          <HeaderCustom />
-          <Layout style={{ marginTop: "8vh" }}>
-            <SideNav color={"#1890ff"} />
-            <Content
-              style={{
-                marginLeft: "15%",
-                minHeight: "calc(100vh - 8vh)",
-                padding: "16px",
-                overflowY: "auto"
-              }}
-            >
-              <Routes>{createRoutes(DATA_MENU)}</Routes>
-            </Content>
-          </Layout>
-          <Footer style={{ backgroundColor: "#ffe58f", height: "2vh", marginLeft: "15%", padding: 0 }}>
-            zanduc {`<3`}
-          </Footer>
-        </Layout>
-      </BrowserRouter> */}
     </div>
   );
 };

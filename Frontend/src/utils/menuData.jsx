@@ -2,6 +2,21 @@ import { NavLink } from "react-router-dom";
 
 import Users from "../pages/Users/index";
 
+import {
+  IconBarChartFill,
+  IconBxMedal,
+  IconCardChecklist,
+  IconClipboardTextClock,
+  IconComment,
+  IconDashboard,
+  IconDeploymentUnit,
+  IconDocument_justified,
+  IconPersonRolodex,
+  IconScoreboardOutline,
+  IconThumbsUpDown,
+  IconUser
+} from "./svg";
+
 const DATA_MENU = [
   {
     key: "dashboard",
@@ -9,7 +24,7 @@ const DATA_MENU = [
     label: (
       <NavLink to="/dashboard">
         <span className="icon" style={{}}>
-          {}
+          {IconDashboard({ height: "1.5em", width: "1.5em" })}
         </span>
         <span className="menu-items">Trang tổng quan</span>
       </NavLink>
@@ -21,21 +36,9 @@ const DATA_MENU = [
     label: (
       <NavLink to="/evaluations">
         <span className="icon" style={{}}>
-          {}
+          {IconDocument_justified({ height: "1.5em", width: "1.5em" })}
         </span>
         <span className="menu-items">Quản lý phiếu đánh giá</span>
-      </NavLink>
-    )
-  },
-  {
-    key: "evaluations-supervisor",
-    name: "Quản lý cấp phê duyệt",
-    label: (
-      <NavLink to="/evaluations-supervisor">
-        <span className="icon" style={{}}>
-          {}
-        </span>
-        <span className="menu-items">Quản lý cấp phê duyệt</span>
       </NavLink>
     )
   },
@@ -55,7 +58,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/organization-management/users">
             <span className="icon" style={{}}>
-              {}
+              {IconUser({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Quản lý người dùng</span>
           </NavLink>
@@ -67,7 +70,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/organization-management/units">
             <span className="icon" style={{}}>
-              {}
+              {IconDeploymentUnit({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Quản lý đơn vị/phòng ban</span>
           </NavLink>
@@ -79,7 +82,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/organization-management/positions">
             <span className="icon" style={{}}>
-              {}
+              {IconPersonRolodex({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Quản lý chức vụ/chức danh</span>
           </NavLink>
@@ -102,7 +105,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/categories/evaluation-ratings">
             <span className="icon" style={{}}>
-              {}
+              {IconScoreboardOutline({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Danh mục thang điểm đánh giá</span>
           </NavLink>
@@ -114,7 +117,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/categories/evaluation-criteria">
             <span className="icon" style={{}}>
-              {}
+              {IconCardChecklist({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Danh mục tiêu chí đánh giá</span>
           </NavLink>
@@ -126,7 +129,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/categories/evaluation-grading">
             <span className="icon" style={{}}>
-              {}
+              {IconBxMedal({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Danh mục xếp loại đánh giá</span>
           </NavLink>
@@ -138,7 +141,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/categories/evaluation-pros-cons">
             <span className="icon" style={{}}>
-              {}
+              {IconThumbsUpDown({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Danh mục ưu và nhược điểm đánh giá</span>
           </NavLink>
@@ -150,7 +153,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/categories/evaluation-comments">
             <span className="icon" style={{}}>
-              {}
+              {IconComment({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Danh mục nhận xét đánh giá</span>
           </NavLink>
@@ -162,7 +165,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/categories/evaluation-periods">
             <span className="icon" style={{}}>
-              {}
+              {IconClipboardTextClock({ height: "1.5em", width: "1.5em" })}
             </span>
             <span className="menu-items">Danh mục kỳ đánh giá</span>
           </NavLink>
@@ -185,7 +188,7 @@ const DATA_MENU = [
         label: (
           <NavLink to="/statistics/evaluation-statistics">
             <span className="icon" style={{}}>
-              {}
+              {IconBarChartFill({ height: "1em", width: "1em" })}
             </span>
             <span className="label truncate-label">Thống kê đánh giá</span>
           </NavLink>
