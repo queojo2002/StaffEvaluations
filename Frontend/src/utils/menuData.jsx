@@ -21,6 +21,7 @@ const DATA_MENU = [
   {
     key: "dashboard",
     name: "Trang tổng quan",
+    components: <Users />,
     label: (
       <NavLink to="/dashboard">
         <span className="icon" style={{}}>

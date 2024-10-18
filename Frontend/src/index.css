@@ -26,3 +26,8 @@
   text-overflow: ellipsis;
 }
 
+.ant-input {
+  font-weight: 400 !important;
+}
+
+

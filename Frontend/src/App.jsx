@@ -1,37 +1,49 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Layout } from "antd";
+import { useSelector } from "react-redux";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { ConfigProvider } from "antd";
 
 import Main from "./components/Layout/Main.jsx";
 import SignIn from "./pages/SignIn/index.jsx";
-import DATA_MENU from "./utils/menuData.jsx";
+import DATA_MENU from "./utils/menuData";
 
 import "antd/dist/reset.css";
 import "./assets/styles/main.css";
 import "./assets/styles/responsive.css";
 import "./index.css";
 
-const App = () => {
-  const { Footer, Content } = Layout;
+const createRoutes = (menuItems) => {
+  return menuItems.map((item) => {
+    if (item.children) {
+      return createRoutes(item.children);
+    }
+    if (item.label.props) {
+      return <Route key={item.key} path={item.label.props.to} element={item.components} replace />;
+    }
+    return null;
+  });
+};
 
-  const createRoutes = (menuItems) => {
-    return menuItems.map((item) => {
-      if (item.children) {
-        return createRoutes(item.children);
-      }
-      if (item.label.props) {
-        return <Route key={item.key} path={item.label.props.to} element={item.components} />;
-      }
-    });
-  };
+const App = () => {
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route key="sign-in" path="/" element={<SignIn />} />
-
-          {/* <Main>{createRoutes(DATA_MENU)}</Main> */}
-        </Routes>
+        {isLoggedIn ? (
+          <Main>
+            <Routes>
+              <Route>
+                {createRoutes(DATA_MENU)}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Route>
+            </Routes>
+          </Main>
+        ) : (
+          <Routes>
+            <Route path="/" element={<SignIn />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        )}
       </BrowserRouter>
     </div>
   );
