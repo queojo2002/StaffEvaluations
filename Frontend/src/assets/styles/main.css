@@ -359,8 +359,7 @@ body {
 .ant-menu-inline.ant-menu-root .ant-menu-item,
 .ant-menu-inline.ant-menu-root .ant-menu-submenu-title {
   align-content: center;
-  height: 100%;
-  display: block;
+  height: "100%";
 }
 
 .ant-layout.ant-layout-has-sider > .ant-layout,

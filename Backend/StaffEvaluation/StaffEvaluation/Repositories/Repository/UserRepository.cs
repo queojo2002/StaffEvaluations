@@ -79,8 +79,8 @@ public class UserRepository : IUserRepository
                 new Claim("UnitId", user.UnitId!.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             },
-            //expires: expires,
-            expires: DateTime.Now.AddSeconds(5),
+            expires: expires,
+            //expires: DateTime.Now.AddSeconds(5),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature)
         );
 
@@ -110,7 +110,7 @@ public class UserRepository : IUserRepository
         };
 
 
-        return new Pagination().HandleGetByIdRespond(tokenModel);
+        return new Pagination().HandleGetByIdRespond(tokenModel, "Đăng nhập thành công!");
     }
 
     public Task<PagedApiResponse<UserModel>> RemoveRangeAsync(List<Guid> ids)
@@ -240,7 +240,36 @@ public class UserRepository : IUserRepository
         return dateTime;
     }
 
+    public async Task<PagedApiResponse<MenuItemsModel>> GetRoles(Guid userId)
+    {
+        var userRoles = await _context.UserRoles!.SingleOrDefaultAsync(ur => ur.UserId == userId);
 
+        if (userRoles == null)
+        {
+            return new ApiResult().Failure<MenuItemsModel>("Người dùng này chưa có chức năng.");
+        }
 
+        var menuItems = await _context.RoleMenuItems!
+            .Where(rmi => rmi.RoleId == userRoles.RoleId)
+            .Select(rmi => new MenuItemsModel
+            {
+                Id = rmi.MenuItems!.Id,
+                Key = rmi.MenuItems.Key,
+                Name = rmi.MenuItems.Name,
+                ParentId = rmi.MenuItems.ParentId,
+                Route = rmi.MenuItems.Route,
+                Icon = rmi.MenuItems.Icon,
+                Sort = rmi.MenuItems.Sort
+            }).OrderBy(e => e.Sort).ToListAsync();
+
+        if (menuItems.Count == 0)
+        {
+            return new ApiResult().Failure<MenuItemsModel>("Người dùng này chưa có chức năng.");
+        }
+
+        var mappedMIM = _mapper.Map<List<MenuItemsModel>>(menuItems);
+
+        return new Pagination().HandleGetAllRespond(0, 0, mappedMIM, menuItems.Count);
+    }
 }
 

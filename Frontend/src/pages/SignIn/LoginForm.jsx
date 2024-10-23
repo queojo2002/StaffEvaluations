@@ -8,7 +8,6 @@ import { Button, Checkbox, Form, Input } from "antd";
 import { login } from "../../redux/authSlice.js"; // Đảm bảo import đúng action
 import apiInstance from "../../utils/apiInstance.js";
 import { BACKEND_API } from "../../utils/constants.js";
-import { openNotificationTopLeft } from "../../utils/openNotification.jsx";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -21,15 +20,14 @@ const LoginForm = () => {
   const handleLogin = async (formValue) => {
     setLoading(true);
 
-    const res = await apiInstance.post(`${BACKEND_API}/api/v1/login`, {
+    const res = await apiInstance.put(`${BACKEND_API}/api/v1/login`, {
       email: formValue.email,
       password: formValue.password
     });
 
     if (!res.isSuccess) {
-      openNotificationTopLeft("error", "", res.message);
       setLoading(false);
-      return;
+      return null;
     }
 
     const tokenInfo = {
@@ -45,7 +43,7 @@ const LoginForm = () => {
   };
 
   useEffect(() => {
-    form.setFieldsValue({ email: "john.doe@sales.com", password: "hashed_password_1" });
+    form.setFieldsValue({ email: "admin@gmail.com", password: "admin" });
   }, []);
 
   return (

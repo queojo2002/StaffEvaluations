@@ -265,8 +265,8 @@ const HeaderCustom = ({
                   textDecoration: "none",
                   borderRadius: 6,
                   height: 44,
-                  paddingLeft: 5,
-                  paddingRight: 5
+                  paddingLeft: 10,
+                  paddingRight: 10
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.03)")}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}

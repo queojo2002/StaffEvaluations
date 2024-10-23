@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { animateScroll as scroll } from "react-scroll";
 import { Breadcrumb, Typography } from "antd";
 
-import DATA_MENU from "../../utils/menuData";
+import { renderTreeMenu } from "../../App";
+import arrayToTree from "../../utils/arrayToTree";
 
 const findRouteName = (pathname, menu) => {
   for (const item of menu) {
@@ -22,16 +24,19 @@ const findRouteName = (pathname, menu) => {
 const Breadcrumbs = () => {
   const { Title } = Typography;
   const location = useLocation();
+  const menu = useSelector((state) => state.menu.menuInfo);
   const [titleName, setTitleName] = useState("");
   const [breadcrumbItems, setBreadcrumbItems] = useState([]);
 
-  const crumbs = () => {
+  const crumbs = (menuData) => {
     const path = location.pathname.split("/");
+
+    console.log(path);
 
     const listPath = path
       .filter((p) => p !== "")
       .map((p) => ({
-        title: findRouteName(p, DATA_MENU) || "Không tìm thấy"
+        title: findRouteName(p, menuData) || "Không tìm thấy"
       }));
 
     listPath.unshift({
@@ -50,8 +55,10 @@ const Breadcrumbs = () => {
   };
 
   useEffect(() => {
-    crumbs();
-  }, [location]);
+    if (menu !== null) {
+      crumbs(renderTreeMenu(arrayToTree(menu)));
+    }
+  }, [location, menu]);
 
   return (
     <>

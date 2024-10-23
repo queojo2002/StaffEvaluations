@@ -21,7 +21,7 @@ public class UnitRepository : IUnitRepository
 
     public async Task<PagedApiResponse<UnitModel>> GetAllPagedAsync(int pageNumber, int pageSize)
     {
-        var units = await _context.Units!.ToListAsync();
+        var units = await _context.Units!.Where(e => !e.IsDeleted).ToListAsync();
 
         var mappedUnits = _mapper.Map<List<UnitModel>>(units);
 
@@ -52,7 +52,7 @@ public class UnitRepository : IUnitRepository
             {
                 Id = Guid.NewGuid(),
                 UnitName = model.UnitName,
-                ParentId = model.ParentId,
+                ParentId = model.ParentId ?? null,
                 IsDeleted = false,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -96,12 +96,12 @@ public class UnitRepository : IUnitRepository
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return new ApiResult().Success<UnitModel>("Xóa thành công.");
+            return new ApiResult().Success<UnitModel>("Xóa đơn vị thành công.");
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            return new ApiResult().Failure<UnitModel>($"Lỗi khi xóa: {ex.Message}");
+            return new ApiResult().Failure<UnitModel>($"Lỗi khi xóa đơn vị: {ex.Message}");
         }
     }
 

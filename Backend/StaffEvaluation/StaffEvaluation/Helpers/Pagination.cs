@@ -59,7 +59,7 @@ public class Pagination
     /// <param name="lstObject">The object retrieved by id.</param>
     /// <typeparam name="T">Generic type representing the data model.</typeparam>
     /// <returns>Returns a TemplateApi response with the retrieved data.</returns>
-    public PagedApiResponse<T> HandleGetByIdRespond<T>(T lstObject)
+    public PagedApiResponse<T> HandleGetByIdRespond<T>(T lstObject, string message = "Lấy thông tin thành công!")
     {
         if (lstObject is null)
         {
@@ -78,7 +78,7 @@ public class Pagination
         return new PagedApiResponse<T>(
             lstObject,
             null,
-            "Lấy thông tin thành công!",
+            message,
             true,
             0,
             0,

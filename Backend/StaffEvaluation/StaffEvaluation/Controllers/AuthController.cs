@@ -16,16 +16,21 @@ public class AuthController : Controller
         _userRepository = userRepository;
     }
 
-    [HttpPost("login")]
+    [HttpPut("login")]
     public async Task<IActionResult> Login(LoginModel loginModel)
     {
 
         var user = await _userRepository.Login(loginModel.Email, loginModel.Password);
 
+        if (!user.IsSuccess)
+        {
+            return BadRequest(user);
+        }
+
         return Ok(user);
     }
 
-    [HttpPost("renewToken")]
+    [HttpPut("renewToken")]
     public async Task<IActionResult> RenewToken(TokenModel tokenModel)
     {
         var renewToken = await _userRepository.RenewToken(tokenModel);
@@ -44,12 +49,7 @@ public class AuthController : Controller
     {
         var userIdClaim = HttpContext.User.FindFirst("Id");
 
-        if (userIdClaim == null)
-        {
-            return Unauthorized("User ID claim not found.");
-        }
-
-        var userId = Guid.Parse(userIdClaim.Value);
+        var userId = Guid.Parse(userIdClaim!.Value);
 
         var user = await _userRepository.GetByIdAsync(userId);
 

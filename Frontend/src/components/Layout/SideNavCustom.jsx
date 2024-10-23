@@ -1,30 +1,13 @@
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-import { Button, Menu } from "antd";
+import { Button, Menu, Spin } from "antd";
 
+import { renderTreeMenu } from "../../App";
 import logo from "../../assets/images/logo.png";
-import DATA_MENU from "../../utils/menuData";
-
-const createRoutes = (menuItems) => {
-  return menuItems.map((item) => {
-    if (item.children) {
-      return createRoutes(item.children);
-    }
-    if (item.label.props) {
-      return <Route key={item.key} path={item.label.props.to} element={item.components} />;
-    }
-  });
-};
+import arrayToTree from "../../utils/arrayToTree";
 
 const SideNavCustom = ({ color }) => {
-  const location = useLocation();
-
-  const getSelectedKey = () => {
-    const path = location.pathname.split("/").pop();
-
-    const isSubMenu = DATA_MENU.some((item) => item.children?.some((child) => child.key === path));
-
-    return isSubMenu ? path : path === "" ? "dashboard" : path;
-  };
   const dashboard = [
     <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" key={0}>
       <path
@@ -42,8 +25,28 @@ const SideNavCustom = ({ color }) => {
     </svg>
   ];
 
+  const location = useLocation();
+  const menu = useSelector((state) => state.menu.menuInfo);
+  const [menuData, setMenuData] = useState([]);
+  const [openKeys, setOpenKeys] = useState([]); // State cho openKeys
+
+  const getSelectedKey = (menuData) => {
+    const path = location.pathname.split("/").pop();
+
+    const isSubMenu = menuData.some((item) => item.children?.some((child) => child.key === path));
+
+    return isSubMenu ? path : path === "" ? "dashboard" : path;
+  };
+
+  useEffect(() => {
+    if (menu !== null) {
+      const renderedMenu = renderTreeMenu(arrayToTree(menu));
+      setMenuData(renderedMenu);
+    }
+  }, [menu, location]);
+
   return (
-    <>
+    <Spin spinning={false}>
       <div
         className="brand"
         style={{
@@ -66,7 +69,12 @@ const SideNavCustom = ({ color }) => {
       </div>
       <hr />
 
-      <Menu defaultSelectedKeys={"dashboard"} mode="inline" selectedKeys={[getSelectedKey()]} items={DATA_MENU} />
+      <Menu
+        defaultSelectedKeys={"dashboard"}
+        selectedKeys={[getSelectedKey(menuData)]}
+        mode="inline"
+        items={menuData}
+      />
 
       <div className="aside-footer">
         <div
@@ -85,7 +93,7 @@ const SideNavCustom = ({ color }) => {
           </Button>
         </div>
       </div>
-    </>
+    </Spin>
   );
 };
 

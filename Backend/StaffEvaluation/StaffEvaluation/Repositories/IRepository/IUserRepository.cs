@@ -9,5 +9,7 @@ namespace StaffEvaluation.Repositories.IRepository
 
         Task<PagedApiResponse<TokenModel>> RenewToken(TokenModel tokenModel);
 
+        Task<PagedApiResponse<MenuItemsModel>> GetRoles(Guid userId);
+
     }
 }

@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { handleLogoutAPI, refreshTokenAPI } from "../apis";
+import { openNotificationTopLeft } from "../utils/openNotification";
 
 let apiInstance = axios.create();
 
@@ -23,6 +24,13 @@ let refreshTokenPromise = null;
 
 apiInstance.interceptors.response.use(
   (response) => {
+    if (response.config?.method === "post") {
+      if (response.data?.isSuccess) {
+        openNotificationTopLeft("success", "Thông báo!", response?.data?.message);
+      } else {
+        openNotificationTopLeft("warning", "Thông báo!", response?.data?.message);
+      }
+    }
     return response.data;
   },
   (error) => {
@@ -58,6 +66,17 @@ apiInstance.interceptors.response.use(
       return refreshTokenPromise.then(() => {
         return apiInstance(originalRequest);
       });
+    }
+
+    if (error.response?.status !== 401) {
+      console.log(error);
+      if (error.isSuccess && error.response?.data?.message) {
+        openNotificationTopLeft("success", "Thông báo!", error.response?.data?.message);
+      } else if (!error.isSuccess && error.response?.data?.message) {
+        openNotificationTopLeft("error", "Thông báo!", error.response?.data?.message);
+      } else {
+        openNotificationTopLeft("error", "Thông báo!", error.message);
+      }
     }
 
     return error;
