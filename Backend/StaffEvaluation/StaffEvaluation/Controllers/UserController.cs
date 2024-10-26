@@ -11,24 +11,26 @@ namespace StaffEvaluation.Controllers;
 public class UserController : Controller
 {
     private readonly IUserRepository _userRepository;
+    private readonly IRolesRepository _rolesRepository;
     private readonly DataContext _context;
 
-    public UserController(IUserRepository userRepository, DataContext context)
+    public UserController(DataContext context, IUserRepository userRepository, IRolesRepository rolesRepository)
     {
         _userRepository = userRepository;
         _context = context;
+        _rolesRepository = rolesRepository;
     }
 
 
-    [HttpGet("getListMenu")]
+    [HttpGet("getListMenuOfUser")]
     [Authorize]
-    public async Task<IActionResult> GetListMenu()
+    public async Task<IActionResult> GetListMenuOfUser()
     {
         Guid userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
 
         var userRole = _context.UserRoles!.SingleOrDefault(x => x.Id == userId);
 
-        var getData = await _userRepository.GetRoles(userId);
+        var getData = await _rolesRepository.GetListMenuOfUser(userId);
 
         if (!getData.IsSuccess)
         {
@@ -37,7 +39,6 @@ public class UserController : Controller
 
         return Ok(getData);
     }
-
 
 }
 

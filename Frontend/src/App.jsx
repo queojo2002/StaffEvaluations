@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { Spin } from "antd";
 
-import { getListMenu } from "./apis/index.jsx";
+import { getListMenuOfUser } from "./apis/index.jsx";
 import Main from "./components/Layout/Main.jsx";
 import SignIn from "./pages/SignIn/index.jsx";
 import { setMenuInfo } from "./redux/menuSlice.js"; // Đảm bảo import đúng action
@@ -24,7 +24,7 @@ const App = () => {
 
   const fetchApiListMenu = async () => {
     setLoading(true);
-    const menus = await getListMenu();
+    const menus = await getListMenuOfUser();
     if (menus?.dataList && menus?.isSuccess) {
       setMenu(renderTreeMenu(arrayToTree(menus.dataList)));
       dispatch(setMenuInfo(menus.dataList));
@@ -36,7 +36,7 @@ const App = () => {
     if (isLoggedIn) {
       fetchApiListMenu();
     } else {
-      setLoading(false); // Nếu chưa đăng nhập, không cần tải menu
+      setLoading(false);
     }
   }, [isLoggedIn]);
 

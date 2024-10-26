@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace StaffEvaluation.Data.Entity;
 
@@ -12,6 +13,7 @@ public class Roles
     [Required]
     public string? RoleName { get; set; }
     public DateTime UpdatedAt { get; set; }
-
+    [AllowNull]
+    public bool IsDeleted { get; set; }
 }
 

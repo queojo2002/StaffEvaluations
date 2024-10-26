@@ -1,3 +1,4 @@
+import Roles from "../pages/Roles/Roles";
 import Units from "../pages/Units/index";
 import User from "../pages/Users/_id";
 
@@ -46,5 +47,5 @@ export const componentsMapping = {
   "evaluation-comments": <User />,
   "evaluation-periods": <User />,
   "evaluation-statistics": <User />,
-  roles: <User />
+  roles: <Roles />
 };

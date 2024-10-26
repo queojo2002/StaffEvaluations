@@ -11,6 +11,7 @@ public class ApplicationMapper : Profile
         CreateMap<Unit, UnitModel>().ReverseMap();
         CreateMap<User, UserModel>().ReverseMap();
         CreateMap<MenuItems, MenuItemsModel>().ReverseMap();
+        CreateMap<Roles, RolesModel>().ReverseMap();
 
     }
 }

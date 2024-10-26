@@ -13,8 +13,8 @@ export const refreshTokenAPI = async (access_token, refresh_token) => {
   });
 };
 
-export const getListMenu = async () => {
-  return await apiInstance.get(`${BACKEND_API}/api/v1/user/getListMenu`);
+export const getListMenuOfUser = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/user/getListMenuOfUser`);
 };
 
 export const getAllUnit = async () => {
@@ -30,4 +30,35 @@ export const insertListUnit = async (values) => {
 
 export const deleteListUnit = async (ids) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/unit/deleteListUnit`, ids);
+};
+
+export const getAllRoles = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/roles/getAllRoles`);
+};
+
+export const getAllMenuItems = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/roles/getAllMenuItems`);
+};
+
+export const getAllMenuItemsByRoleId = async (roleId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/roles/getAllMenuItemsByRoleId?roleId=${roleId}`);
+};
+
+export const insertRoleAndMenuItems = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/roles/insertRoleAndMenuItems`, {
+    roleName: values.roleName,
+    menuItems: values.menuItems
+  });
+};
+
+export const updateRoleAndMenuItems = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/roles/updateRoleAndMenuItems`, {
+    roleId: values.roleId,
+    roleName: values.roleName,
+    menuItems: values.menuItems
+  });
+};
+
+export const removeRangeRoleAndMenuItems = async (ids) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/roles/removeRangeRoleAndMenuItems`, ids);
 };

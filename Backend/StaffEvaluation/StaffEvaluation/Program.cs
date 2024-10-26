@@ -35,6 +35,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRolesRepository, RolesRepository>();
 
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);

@@ -54,7 +54,7 @@ public class UnitRepository : IUnitRepository
                 UnitName = model.UnitName,
                 ParentId = model.ParentId ?? null,
                 IsDeleted = false,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.Now
             };
 
             await _context.Units!.AddAsync(unit);
@@ -90,7 +90,7 @@ public class UnitRepository : IUnitRepository
             foreach (var unit in unitsToRemove)
             {
                 unit.IsDeleted = true;
-                unit.UpdatedAt = DateTime.UtcNow;
+                unit.UpdatedAt = DateTime.Now;
             }
 
             await _context.SaveChangesAsync();
@@ -108,6 +108,11 @@ public class UnitRepository : IUnitRepository
 
     public async Task<PagedApiResponse<UnitModel>> UpdateAsync(UnitModel model)
     {
+        if (model.Id == Guid.Empty)
+        {
+            return new ApiResult().Failure<UnitModel>("ID đơn vị không hợp lệ.");
+        }
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -122,17 +127,17 @@ public class UnitRepository : IUnitRepository
             // Cập nhật thông tin
             unitToUpdate.UnitName = model.UnitName;
             unitToUpdate.ParentId = model.ParentId;
-            unitToUpdate.UpdatedAt = DateTime.UtcNow;
+            unitToUpdate.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return new ApiResult().Success<UnitModel>("Cập nhật thành công.");
+            return new ApiResult().Success<UnitModel>("Cập nhật đơn vị thành công.");
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            return new ApiResult().Failure<UnitModel>($"Lỗi khi cập nhật: {ex.Message}");
+            return new ApiResult().Failure<UnitModel>($"Lỗi khi cập nhật đơn vị: {ex.Message}");
         }
     }
 
