@@ -12,7 +12,11 @@ public class ApplicationMapper : Profile
         CreateMap<User, UserModel>().ReverseMap();
         CreateMap<MenuItems, MenuItemsModel>().ReverseMap();
         CreateMap<Roles, RolesModel>().ReverseMap();
-
+        CreateMap<UserType, UserTypeModel>().ReverseMap();
+        CreateMap<CategoryRating, CategoryRatingModel>().ReverseMap();
+        CreateMap<CategoryTimeType, CategoryTimeTypeModel>().ReverseMap();
+        CreateMap<CategoryComment, CategoryCommentModel>().ReverseMap();
+        CreateMap<CategoryProsCons, CategoryProsConsModel>().ReverseMap();
     }
 }
 

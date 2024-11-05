@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AiFillEdit } from "react-icons/ai";
 import { FaEye } from "react-icons/fa";
 import { GrSearch } from "react-icons/gr";
@@ -6,52 +6,34 @@ import { IoMdAddCircle } from "react-icons/io";
 import { IoFilterSharp } from "react-icons/io5";
 import { RiDeleteBin2Fill } from "react-icons/ri";
 import { ExclamationCircleFilled } from "@ant-design/icons";
-import { Button, Card, Divider, Flex, Input, Modal, Spin, Table, Tag, Tooltip, Typography } from "antd";
+import { Button, Card, Divider, Flex, Input, Modal, Spin, Table, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 
-import { deleteListUnit, getAllUnit } from "../../apis";
-import Breadcrumbs from "../../components/Breadcrumbs";
-import arrayToTree from "../../utils/arrayToTree";
+import NewAndUpdateEvaluationPeriods from "./NewAndUpdateEvaluationPeriods";
 
-import AddNewUnit from "./AddNewUnit";
+import { getAllCategoryTimeType, getAllUnit, removeCategoryTimeType } from "~/apis";
+import Breadcrumbs from "~/components/Breadcrumbs";
+import arrayToTree from "~/utils/arrayToTree";
 
-export const renderTreeUnit = (nodes) => {
-  return nodes.map((node) => {
-    const nodeData = {
-      title: <Tag> {node.unitName}</Tag>,
-      id: node.id,
-      value: node.id,
-      key: node.id,
-      unitName: node.unitName,
-      parentId: node.parentId,
-      updatedAt: node.updatedAt
-    };
-
-    if (node.children && node.children.length > 0) {
-      return {
-        ...nodeData,
-        children: renderTreeUnit(node.children)
-      };
-    }
-    return nodeData;
-  });
-};
-
-const Units = () => {
+const EvaluationPeriods = () => {
   const { Text } = Typography;
   const { confirm } = Modal;
 
   const [loading, setLoading] = useState(false);
-  const [units, setUnits] = useState([]);
+  const [datas, setDatas] = useState([]);
+  const [dataUnit, setDataUnit] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
+  const [id, setId] = useState(null);
 
   const hasSelected = selectedRowKeys.length > 0;
 
-  const fetchApiUnit = async () => {
+  const fetchApiGetAll = async () => {
     setLoading(true);
-    const units = await getAllUnit();
-    setUnits(units.dataList);
+    const data1 = await getAllCategoryTimeType();
+    const data2 = await getAllUnit();
+    setDatas(data1.dataList);
+    setDataUnit(data2.dataList);
     setLoading(false);
   };
 
@@ -65,10 +47,14 @@ const Units = () => {
   };
 
   const handleButtonAddNew = () => {
+    setId(null);
     setIsOpenModalAdd(true);
   };
 
-  const handleButtonEdit = (id) => {};
+  const handleButtonEdit = (id) => {
+    setId(id);
+    setIsOpenModalAdd(true);
+  };
 
   const handleButtonDelete = () => {
     confirm({
@@ -81,9 +67,9 @@ const Units = () => {
       icon: <ExclamationCircleFilled />,
       content: "Khi nhấn nút Đồng ý, bạn vui lòng chờ đến khi hộp thoại này tắt.",
       onOk: async () => {
-        const res = await deleteListUnit(selectedRowKeys);
+        const res = await removeCategoryTimeType(selectedRowKeys);
         if (res.isSuccess) {
-          await fetchApiUnit();
+          await fetchApiGetAll();
           setSelectedRowKeys([]);
         }
       },
@@ -103,23 +89,44 @@ const Units = () => {
 
   const columns = [
     {
-      title: "Tên đơn vị",
+      title: "Tên kỳ đánh giá",
+      dataIndex: "timeTypeName",
+      width: 250,
+      render: (timeTypeName) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{timeTypeName}</div>
+    },
+    {
+      title: "Thuộc đơn vị",
       dataIndex: "unitName",
-      width: 180,
-      render: (text) => <Text>{text}</Text>
+      width: 250,
+      render: (unitName) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{unitName}</div>
+    },
+    {
+      title: "Ngày bắt đầu",
+      dataIndex: "fromDate",
+      render: (fromDate) => (
+        <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{dayjs(fromDate).format("DD-MM-YYYY HH:mm")}</div>
+      )
+    },
+    {
+      title: "Ngày kết thúc",
+      dataIndex: "toDate",
+      render: (toDate) => (
+        <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{dayjs(toDate).format("DD-MM-YYYY HH:mm")}</div>
+      )
     },
     {
       title: "Ngày cập nhật gần nhất",
       dataIndex: "updatedAt",
-      width: 200,
-      render: (text) => <Text>{dayjs(text).format("DD-MM-YYYY HH:mm")}</Text>
+      render: (updatedAt) => (
+        <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{dayjs(updatedAt).format("DD-MM-YYYY HH:mm")}</div>
+      )
     },
     {
       title: "Hành động",
       dataIndex: "action",
-      width: 200,
+      width: "10%",
       render: (text, record) => (
-        <Flex align="center" justify="flex-start" gap={10}>
+        <Flex align="center" justify="center" gap={10}>
           <Tooltip title="Xem chi tiết">
             <Button
               style={{ borderRadius: 10 }}
@@ -148,45 +155,43 @@ const Units = () => {
       x: 800
     },
     rowKey: "id",
-    rowSelection: {
-      ...rowSelection,
-      columnWidth: 60
-    },
-    columns: columns,
-    dataSource: units ? renderTreeUnit(arrayToTree(units)) : null,
+    rowSelection: rowSelection,
+    columns: columns.map((item) => ({
+      width: 130,
+      align: "center",
+      ...item
+    })),
+    dataSource: datas,
     pagination: { pageSize: 10, showSizeChanger: false },
     bordered: true,
     size: "middle"
   };
 
   useEffect(() => {
-    fetchApiUnit();
+    fetchApiGetAll();
   }, []);
 
   return (
     <Spin spinning={loading}>
       <Modal
-        title="Thêm mới đơn vị/phòng ban"
+        title="Thêm mới kỳ đánh giá"
         open={isOpenModalAdd}
         onOk={() => {}}
         onCancel={() => {
           setIsOpenModalAdd(false);
         }}
         footer={null}
+        style={{ top: 20 }}
+        width={600}
       >
-        <AddNewUnit listUnit={arrayToTree(units)} refetchApiUnit={fetchApiUnit} closeModal={setIsOpenModalAdd} />
+        <NewAndUpdateEvaluationPeriods
+          listUnit={arrayToTree(dataUnit)}
+          refetchApi={fetchApiGetAll}
+          closeModal={setIsOpenModalAdd}
+          id={id}
+        />
       </Modal>
-      {/* <Modal
-        title="Thêm mới người dùng"
-        open={isAddNewModalOpen}
-        onOk={() => {}}
-        onCancel={() => {
-          setIsAddNewModalOpen(false);
-        }}
-        footer={null}
-      >
-        <AddNewUser id={userId} />
-      </Modal> */}
+
       <Breadcrumbs />
       <Divider />
       <Flex gap="middle" vertical>
@@ -241,4 +246,4 @@ const Units = () => {
   );
 };
 
-export default Units;
+export default EvaluationPeriods;

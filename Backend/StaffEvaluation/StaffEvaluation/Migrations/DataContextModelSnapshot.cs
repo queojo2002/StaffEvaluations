@@ -22,6 +22,244 @@ namespace StaffEvaluation.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Sort")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CategoryComment");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryCriteria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CategoryRatingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CriteriaName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDistinct")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryRatingId");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("CategoryCriteria");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryProsCons", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPros")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CategoryProsCons");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryRating", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("EndValue")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RatingName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StartValue")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("CategoryRating");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryTimeType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("FromDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TimeTypeName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ToDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("CategoryTimeType");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.ElectronicSignature", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PrivateKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PublicKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ElectronicSignature");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.Evaluation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryTimeTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EvaluationName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryTimeTypeId");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("Evaluation");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationCriteria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryCriteriaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EvaluationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Sort")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryCriteriaId");
+
+                    b.HasIndex("EvaluationId");
+
+                    b.ToTable("EvaluationCriteria");
+                });
+
             modelBuilder.Entity("StaffEvaluation.Data.Entity.MenuItems", b =>
                 {
                     b.Property<Guid>("Id")
@@ -112,6 +350,9 @@ namespace StaffEvaluation.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -181,15 +422,24 @@ namespace StaffEvaluation.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PositionsName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("UnitId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserTypeId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UnitId");
+
+                    b.HasIndex("UserTypeId");
 
                     b.ToTable("User");
                 });
@@ -213,6 +463,115 @@ namespace StaffEvaluation.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.UserType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserTypeName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserType");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryCriteria", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.CategoryRating", "CategoryRating")
+                        .WithMany()
+                        .HasForeignKey("CategoryRatingId");
+
+                    b.HasOne("StaffEvaluation.Data.Entity.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryRating");
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryRating", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.CategoryTimeType", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.ElectronicSignature", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.Evaluation", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.CategoryTimeType", "CategoryTimeType")
+                        .WithMany()
+                        .HasForeignKey("CategoryTimeTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StaffEvaluation.Data.Entity.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryTimeType");
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationCriteria", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.CategoryCriteria", "CategoryCriteria")
+                        .WithMany()
+                        .HasForeignKey("CategoryCriteriaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StaffEvaluation.Data.Entity.Evaluation", "Evaluation")
+                        .WithMany()
+                        .HasForeignKey("EvaluationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryCriteria");
+
+                    b.Navigation("Evaluation");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.RefreshToken", b =>
@@ -253,7 +612,15 @@ namespace StaffEvaluation.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StaffEvaluation.Data.Entity.UserType", "UserType")
+                        .WithMany()
+                        .HasForeignKey("UserTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Unit");
+
+                    b.Navigation("UserType");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.UserRoles", b =>

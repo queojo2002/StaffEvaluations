@@ -26,24 +26,76 @@ public class UserRepository : IUserRepository
         _configuration = configuration;
     }
 
-    public Task<PagedApiResponse<UserModel>> GetAllPagedAsync(int pageNumber, int pageSize)
+    public async Task<PagedApiResponse<UserModel>> GetAllPagedAsync(int pageNumber, int pageSize)
     {
-        throw new NotImplementedException();
+        var userModels = await (
+                                    from user in _context.Users
+                                    join unit in _context.Units! on user.UnitId equals unit.Id
+                                    join ut in _context.UserTypes! on user.UserTypeId equals ut.Id
+                                    where !user.IsDeleted
+                                    select new UserModel
+                                    {
+                                        Id = user.Id,
+                                        UserTypeId = user.UserTypeId,
+                                        UserTypeName = ut.UserTypeName,
+                                        UnitName = unit.UnitName,
+                                        UnitId = user.UnitId,
+                                        FullName = user.FullName,
+                                        Email = user.Email,
+                                        Password = user.Password,
+                                        Phone = user.Phone,
+                                        Address = user.Address,
+                                        Birthday = user.Birthday,
+                                        PositionsName = user.PositionsName,
+                                        IsActive = user.IsActive,
+                                        IsDeleted = user.IsDeleted,
+                                        UpdatedAt = user.UpdatedAt
+                                    }
+                                ).ToListAsync();
+
+        return new Pagination().HandleGetAllRespond(
+            pageNumber,
+            pageSize,
+            userModels,
+            userModels.Count
+        );
     }
 
     public async Task<PagedApiResponse<UserModel>> GetByIdAsync(Guid id)
     {
-        var users = await _context.Users!.FindAsync(id);
+        var userModel = await (
+                                    from user in _context.Users
+                                    join unit in _context.Units! on user.UnitId equals unit.Id
+                                    join ut in _context.UserTypes! on user.UserTypeId equals ut.Id
+                                    join ur in _context.UserRoles! on user.Id equals ur.UserId
+                                    where !user.IsDeleted && user.Id == id
+                                    select new UserModel
+                                    {
+                                        Id = user.Id,
+                                        RoleId = ur.RoleId,
+                                        UserTypeId = user.UserTypeId,
+                                        UserTypeName = ut.UserTypeName,
+                                        UnitName = unit.UnitName,
+                                        UnitId = user.UnitId,
+                                        FullName = user.FullName,
+                                        Email = user.Email,
+                                        Password = user.Password,
+                                        Phone = user.Phone,
+                                        Address = user.Address,
+                                        Birthday = user.Birthday,
+                                        PositionsName = user.PositionsName,
+                                        IsActive = user.IsActive,
+                                        IsDeleted = user.IsDeleted,
+                                        UpdatedAt = user.UpdatedAt
+                                    }
+                                ).SingleOrDefaultAsync();
 
-        var mappedUnit = _mapper.Map<UserModel>(users);
+        var mappedUser = _mapper.Map<UserModel>(userModel);
 
-        return new Pagination().HandleGetByIdRespond(mappedUnit);
+        return new Pagination().HandleGetByIdRespond(mappedUser);
     }
 
-    public Task<PagedApiResponse<UserModel>> InsertAsync(UserModel entity)
-    {
-        throw new NotImplementedException();
-    }
+
 
     public async Task<PagedApiResponse<TokenModel>> Login(string email, string password)
     {
@@ -111,11 +163,6 @@ public class UserRepository : IUserRepository
 
 
         return new Pagination().HandleGetByIdRespond(tokenModel, "Đăng nhập thành công!");
-    }
-
-    public Task<PagedApiResponse<UserModel>> RemoveRangeAsync(List<Guid> ids)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task<PagedApiResponse<TokenModel>> RenewToken(TokenModel tokenModel)
@@ -214,10 +261,6 @@ public class UserRepository : IUserRepository
     }
 
 
-    public Task<PagedApiResponse<UserModel>> UpdateAsync(UserModel entity)
-    {
-        throw new NotImplementedException();
-    }
 
 
     private string GenerateRefreshToken()
@@ -271,5 +314,166 @@ public class UserRepository : IUserRepository
 
         return new Pagination().HandleGetAllRespond(0, 0, mappedMIM, menuItems.Count);
     }
+
+    public async Task<PagedApiResponse<UserModel>> InsertAsync(UserModel entity)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            bool emailExists = await _context.Users!.AnyAsync(u => u.Email == entity.Email && !u.IsDeleted);
+            bool phoneExists = await _context.Users!.AnyAsync(u => u.Phone == entity.Phone && !u.IsDeleted);
+
+            if (emailExists)
+            {
+                return new ApiResult().Failure<UserModel>("Email này đã tồn tại.");
+            }
+
+            if (phoneExists)
+            {
+                return new ApiResult().Failure<UserModel>("Số điện thoại này đã tồn tại.");
+            }
+
+            Guid userId = Guid.NewGuid();
+
+            User user = new User
+            {
+                Id = userId,
+                UserTypeId = entity.UserTypeId,
+                UnitId = entity.UnitId,
+                FullName = entity.FullName,
+                Email = entity.Email,
+                Password = entity.Password,
+                Phone = entity.Phone,
+                Address = entity.Address,
+                Birthday = entity.Birthday,
+                PositionsName = entity.PositionsName,
+                IsActive = true,
+                IsDeleted = false,
+                UpdatedAt = DateTime.Now
+            };
+
+            UserRoles userRoles = new UserRoles
+            {
+                Id = Guid.NewGuid(),
+                RoleId = entity.RoleId,
+                UserId = userId
+            };
+
+
+
+            RSA rsa = RSA.Create();
+            ElectronicSignature signature = new ElectronicSignature
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Status = 0,
+                PublicKey = Convert.ToBase64String(rsa.ExportRSAPrivateKey()),
+                PrivateKey = Convert.ToBase64String(rsa.ExportRSAPublicKey()),
+                UpdatedAt = DateTime.Now
+            };
+
+
+            await _context.Users!.AddAsync(user);
+
+            await _context.UserRoles!.AddAsync(userRoles);
+
+            await _context.ElectronicSignatures!.AddAsync(signature);
+
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return new ApiResult().Success<UserModel>("Thêm mới người dùng thành công");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+
+            return new ApiResult().Failure<UserModel>($"Lỗi khi thêm mới người dùng: {ex.Message}");
+        }
+    }
+
+    public async Task<PagedApiResponse<UserModel>> UpdateAsync(UserModel entity)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var user = await _context.Users!.FindAsync(entity.Id);
+
+            var userRole = await _context.UserRoles!.Where(e => e.UserId == entity.Id).FirstOrDefaultAsync();
+
+            if (user == null || user.IsDeleted)
+            {
+                return new ApiResult().Failure<UserModel>("Người dùng này không tồn tại hoặc đã bị xóa.");
+            }
+            else if (userRole == null)
+            {
+                return new ApiResult().Failure<UserModel>("Không tìm thấy vai trò của người dùng này.");
+            }
+
+            bool phoneExists = await _context.Users!.AnyAsync(u => u.Phone == entity.Phone && u.Id != entity.Id && !u.IsDeleted);
+
+            if (phoneExists)
+            {
+                return new ApiResult().Failure<UserModel>("Số điện thoại này đã tồn tại với người dùng khác.");
+            }
+
+            user.UserTypeId = entity.UserTypeId;
+            user.UnitId = entity.UnitId;
+            user.FullName = entity.FullName;
+            user.Phone = entity.Phone;
+            user.Address = entity.Address;
+            user.Birthday = entity.Birthday;
+            user.PositionsName = entity.PositionsName;
+            user.UpdatedAt = DateTime.Now;
+
+            userRole.RoleId = entity.RoleId;
+
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return new ApiResult().Success<UserModel>("Cập nhật người dùng thành công.");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return new ApiResult().Failure<UserModel>($"Lỗi khi cập nhật người dùng: {ex.Message}");
+        }
+    }
+
+    public async Task<PagedApiResponse<UserModel>> RemoveRangeAsync(List<Guid> ids)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var userToDelete = await _context.Users!.Where(rmi => ids.Contains(rmi.Id)).ToListAsync();
+
+            if (userToDelete.Count == 0) return new ApiResult().Failure<UserModel>("Không tìm thấy người dùng nào để xóa.");
+
+            userToDelete.ForEach(u => u.IsDeleted = true);
+
+            var userRoleDelete = await _context.UserRoles!.Where(ur => userToDelete.Select(r => r.Id).Contains(ur.UserId)).ToListAsync();
+
+            if (userRoleDelete.Any()) _context.UserRoles!.RemoveRange(userRoleDelete);
+
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return new ApiResult().Success<UserModel>("Xoá các người dùng thành công.");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+
+            return new ApiResult().Failure<UserModel>($"Lỗi khi xoá các người dùng: {ex.Message}");
+        }
+    }
+
+
 }
 

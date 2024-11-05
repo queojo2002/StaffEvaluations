@@ -1,26 +1,45 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircleOutlined, RetweetOutlined } from "@ant-design/icons";
-import { Button, Col, Divider, Form, Row, Space, Spin, TreeSelect } from "antd";
-import TextArea from "antd/es/input/TextArea";
+import { Button, Col, Divider, Form, Input, Row, Space, Spin } from "antd";
 
-import { insertListUnit } from "../../apis";
+import { getUserTypeById, insertUserType, updateUserType } from "~/apis";
 
-import { renderTreeUnit } from ".";
-const AddNewUnit = (props) => {
-  const { listUnit, refetchApiUnit, closeModal } = props;
+const NewAndUpdateUserType = (props) => {
+  const { refetchApi, closeModal, id } = props;
   const [formRef] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = async (values) => {
+  const fetchUserTypeById = async (id) => {
     setLoading(true);
-    const insert = await insertListUnit(values);
-    if (insert.isSuccess) {
-      formRef.resetFields();
-      refetchApiUnit();
-      closeModal(false);
-    }
+    const res = await getUserTypeById(id);
+    formRef.setFieldsValue({
+      ...res,
+      id: id,
+      userTypeName: res.data?.userTypeName
+    });
     setLoading(false);
   };
+
+  const onFinish = async (values) => {
+    setLoading(true);
+
+    const res = id ? await updateUserType(values) : await insertUserType(values);
+    if (res.isSuccess) {
+      formRef.resetFields();
+      refetchApi();
+      closeModal(false);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchUserTypeById(id);
+    } else {
+      formRef.resetFields();
+    }
+  }, [id, formRef, refetchApi]);
 
   return (
     <div className="AddNewUnit">
@@ -29,29 +48,21 @@ const AddNewUnit = (props) => {
         <Row>
           <Col xs={24} sm={24} md={24} lg={24} xl={24}>
             <Form layout={"vertical"} form={formRef} onFinish={onFinish}>
+              <Form.Item name={"id"} hidden>
+                <Input disabled={true} />
+              </Form.Item>
+
               <Form.Item
-                label="Tên phòng ban (Mỗi dòng là 1 dữ liệu)"
-                name={"unitName"}
+                label="Tên loại người dùng"
+                name={"userTypeName"}
                 rules={[
                   {
                     required: true,
-                    message: "Vui lòng nhập tên phòng ban"
+                    message: "Vui lòng nhập tên loại người dùng"
                   }
                 ]}
               >
-                <TextArea rows={10} placeholder={"Đơn vị 1\nĐơn vị 2\nĐơn vị 3\nĐơn vị 4\n...."} />
-              </Form.Item>
-
-              <Form.Item name={"parentId"} label="Chọn phòng ban cha (Nếu là đơn vị cha thì không cần chọn ở đây)">
-                <TreeSelect
-                  placeholder={"Chọn phòng ban cha"}
-                  showSearch
-                  treeNodeFilterProp={"title"}
-                  maxTagCount={"responsive"}
-                  treeLine={true}
-                  treeData={renderTreeUnit(listUnit)}
-                  style={{ height: 40 }}
-                />
+                <Input placeholder={"Tên loại người dùng"} />
               </Form.Item>
 
               <Form.Item>
@@ -85,4 +96,4 @@ const AddNewUnit = (props) => {
   );
 };
 
-export default AddNewUnit;
+export default NewAndUpdateUserType;

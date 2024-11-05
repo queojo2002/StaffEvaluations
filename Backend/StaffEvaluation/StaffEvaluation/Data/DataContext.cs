@@ -24,6 +24,15 @@ public class DataContext : DbContext
     public DbSet<Roles>? Roles { get; set; }
     public DbSet<UserRoles>? UserRoles { get; set; }
     public DbSet<RoleMenuItems>? RoleMenuItems { get; set; }
+    public DbSet<UserType>? UserTypes { get; set; }
+    public DbSet<ElectronicSignature> ElectronicSignatures { get; set; }
+    public DbSet<CategoryRating> CategoryRatings { get; set; }
+    public DbSet<CategoryCriteria> CategoryCriterias { get; set; }
+    public DbSet<CategoryTimeType> CategoryTimeTypes { get; set; }
+    public DbSet<CategoryComment> CategoryComments { get; set; }
+    public DbSet<CategoryProsCons> CategoryProsCons { get; set; }
+    public DbSet<Evaluation> Evaluations { get; set; }
+    public DbSet<EvaluationCriteria> EvaluationCriterias { get; set; }
 
     #endregion
 

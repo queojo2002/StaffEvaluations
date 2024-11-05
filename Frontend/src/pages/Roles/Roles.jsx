@@ -91,20 +91,22 @@ const Roles = () => {
       title: "Tên vai trò",
       dataIndex: "roleName",
       width: 180,
-      render: (text) => <Text>{text}</Text>
+      render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
     },
     {
       title: "Ngày cập nhật gần nhất",
       dataIndex: "updatedAt",
       width: 200,
-      render: (text) => <Text>{dayjs(text).format("DD-MM-YYYY HH:mm")}</Text>
+      render: (text) => (
+        <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{dayjs(text).format("DD-MM-YYYY HH:mm")}</div>
+      )
     },
     {
       title: "Hành động",
       dataIndex: "action",
       width: 200,
       render: (text, record) => (
-        <Flex align="center" justify="flex-start" gap={10}>
+        <Flex align="center" justify="center" gap={10}>
           <Tooltip title="Xem chi tiết">
             <Button
               style={{ borderRadius: 10 }}
@@ -133,11 +135,12 @@ const Roles = () => {
       x: 800
     },
     rowKey: "id",
-    rowSelection: {
-      ...rowSelection,
-      columnWidth: 60
-    },
-    columns: columns,
+    rowSelection: rowSelection,
+    columns: columns.map((item) => ({
+      width: 130,
+      align: "center",
+      ...item
+    })),
     dataSource: datas,
     pagination: { pageSize: 10, showSizeChanger: false },
     bordered: true,
@@ -151,6 +154,7 @@ const Roles = () => {
   return (
     <Spin spinning={loading}>
       <Modal
+        style={{ top: 20 }}
         title="Thêm mới vai trò"
         open={isOpenModalAdd}
         onOk={() => {}}

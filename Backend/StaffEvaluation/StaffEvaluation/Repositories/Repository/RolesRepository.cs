@@ -153,7 +153,7 @@ public class RolesRepository : IRolesRepository
                     MenuItemId = item
                 }).ToList();
 
-                await _context.RoleMenuItems.AddRangeAsync(newRoleMenuItems);
+                await _context.RoleMenuItems!.AddRangeAsync(newRoleMenuItems);
             }
 
             await _context.SaveChangesAsync();

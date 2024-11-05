@@ -9,6 +9,8 @@ public class User
 {
     [Key, Required]
     public Guid Id { get; set; }
+    [ForeignKey("UserType")]
+    public Guid UserTypeId { get; set; }
     [ForeignKey("Unit")]
     public Guid UnitId { get; set; }
     [Required]
@@ -22,13 +24,15 @@ public class User
     [Required]
     public DateTime Birthday { get; set; }
     [Required]
+    public string? PositionsName { get; set; }
+    [Required]
     public bool IsActive { get; set; } = true;
     [Required]
     public bool IsDeleted { get; set; } = false;
     [Required]
     public DateTime UpdatedAt { get; set; }
-
     public Unit? Unit { get; set; }
+    public UserType? UserType { get; set; }
 
 }
 

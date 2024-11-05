@@ -1,6 +1,5 @@
 import Roles from "../pages/Roles/Roles";
-import Units from "../pages/Units/index";
-import User from "../pages/Users/_id";
+import Units from "../pages/Units/Units";
 
 import {
   IconBarChartFill,
@@ -17,6 +16,15 @@ import {
   IconUser,
   IconUserShield
 } from "./svg";
+
+import Evaluation from "~/pages/Evaluation/Evaluation";
+import EvaluationsComments from "~/pages/EvaluationComments/EvaluationsComments";
+import EvaluationCriteria from "~/pages/EvaluationCriteria/EvaluationCriteria";
+import EvaluationPeriods from "~/pages/EvaluationPeriods/EvaluationPeriods";
+import EvaluationProsCons from "~/pages/EvaluationProsCons/EvaluationProsCons";
+import EvaluationRatings from "~/pages/EvaluationRatings/EvaluationRatings";
+import Users from "~/pages/Users/Users";
+import UserType from "~/pages/UserType/UserType";
 
 export const iconMapping = {
   IconBarChartFill: IconBarChartFill,
@@ -35,17 +43,16 @@ export const iconMapping = {
 };
 
 export const componentsMapping = {
-  dashboard: <User />,
-  evaluations: <User />,
-  users: <User />,
+  dashboard: <Users />,
+  evaluations: <Evaluation />,
+  users: <Users />,
   units: <Units />,
-  positions: <User />,
-  "evaluation-ratings": <User />,
-  "evaluation-criteria": <User />,
-  "evaluation-grading": <User />,
-  "evaluation-pros-cons": <User />,
-  "evaluation-comments": <User />,
-  "evaluation-periods": <User />,
-  "evaluation-statistics": <User />,
+  "user-type": <UserType />,
+  "evaluation-ratings": <EvaluationRatings />,
+  "evaluation-criteria": <EvaluationCriteria />,
+  "evaluation-pros-cons": <EvaluationProsCons />,
+  "evaluation-comments": <EvaluationsComments />,
+  "evaluation-periods": <EvaluationPeriods />,
+  "evaluation-statistics": <Users />,
   roles: <Roles />
 };

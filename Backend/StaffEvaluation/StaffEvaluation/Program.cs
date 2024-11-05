@@ -26,6 +26,7 @@ builder.Services.AddCors(options =>
         });
 });
 
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectString"));
@@ -36,6 +37,13 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRolesRepository, RolesRepository>();
+builder.Services.AddScoped<IUserTypeRepository, UserTypeRepository>();
+builder.Services.AddScoped<ICategoryRatingRepository, CategoryRatingRepository>();
+builder.Services.AddScoped<ICategoryTimeTypeRepository, CategoryTimeTypeRepository>();
+builder.Services.AddScoped<ICategoryCriteriaRepository, CategoryCriteriaRepository>();
+builder.Services.AddScoped<ICategoryCommentRepository, CategoryCommentRepository>();
+builder.Services.AddScoped<ICategoryProsConsRepository, CategoryProsConsRepository>();
+builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
 
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
