@@ -193,7 +193,6 @@ const DetailsAndSortingEvaluationsCriteria = (props) => {
   };
 
   useEffect(() => {
-    console.log(id);
     if (id) {
       fetchById(id);
     }

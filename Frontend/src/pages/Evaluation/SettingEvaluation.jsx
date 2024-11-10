@@ -1,5 +1,8 @@
 import { Tabs } from "antd";
 
+import AddSupervisorToEvaluation from "./SettingEvaluationCompoments/AddSupervisorToEvaluation";
+import AddUserToEvaluation from "./SettingEvaluationCompoments/AddUserToEvaluation";
+
 import DetailsAndSortingEvaluationsCriteria from "~/pages/Evaluation/SettingEvaluationCompoments/DetailsAndSortingEvaluationsCriteria";
 
 const SettingEvaluation = (props) => {
@@ -14,12 +17,13 @@ const SettingEvaluation = (props) => {
     {
       key: "2",
       label: `Cấu hình người dùng`,
-      children: `Tab 3`
+      children: `Tab 3`,
+      children: <AddUserToEvaluation id={id} />
     },
     {
       key: "3",
       label: `Cấu hình giám sát viên`,
-      children: `Tab 4`
+      children: <AddSupervisorToEvaluation id={id} />
     }
   ];
 

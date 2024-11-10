@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { AiFillEdit } from "react-icons/ai";
-import { FaEye, FaSignature } from "react-icons/fa";
-import { GiArchiveRegister } from "react-icons/gi";
+import { FaEye } from "react-icons/fa";
 import { GrSearch } from "react-icons/gr";
 import { IoMdAddCircle } from "react-icons/io";
 import { IoFilterSharp } from "react-icons/io5";
@@ -15,7 +14,7 @@ import NewAndUpdateUser from "./NewAndUpdateUser";
 import { downloadSignature, getAllRoles, getAllUnit, getAllUser, getAllUserType, removeRangeUser } from "~/apis";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import arrayToTree from "~/utils/arrayToTree";
-import { openNotificationBottomRight, openNotificationTopLeft } from "~/utils/openNotification";
+import { openNotificationTopLeft } from "~/utils/openNotification";
 
 const Users = () => {
   const { Text, Title } = Typography;
