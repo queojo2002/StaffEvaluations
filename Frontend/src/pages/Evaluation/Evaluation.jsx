@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { CiSettings } from "react-icons/ci";
-import { FaRegEye } from "react-icons/fa";
 import { GoClockFill } from "react-icons/go";
 import { IoMdAddCircle, IoMdAddCircleOutline } from "react-icons/io";
 import { RiDeleteBin2Fill } from "react-icons/ri";
@@ -11,41 +10,59 @@ import dayjs from "dayjs";
 
 import NewAndUpdateEvaluationPeriods from "../EvaluationPeriods/NewAndUpdateEvaluationPeriods";
 
+import AddAndUpdateCriteriaToEvaluation from "./AddAndUpdateCriteriaToEvaluation";
+import AddAndUpdateCriteriaToListEvaluation from "./AddAndUpdateCriteriaToListEvaluation";
 import EditEvaluation from "./EditEvaluation";
 import NewEvaluation from "./NewEvaluation";
+import SettingEvaluation from "./SettingEvaluation";
 import UpdateTimeTypeToEvaluation from "./UpdateTimeTypeToEvaluation";
 
-import { getAllCategoryTimeType, getAllEvaluation, getAllUnit, removeEvaluation } from "~/apis";
+import { getAllCategoryCriteria, getAllCategoryTimeType, getAllEvaluation, getAllUnit, removeEvaluation } from "~/apis";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import arrayToTree from "~/utils/arrayToTree";
+import { openNotificationTopLeft } from "~/utils/openNotification";
 
 const Evaluation = () => {
   const { Text } = Typography;
   const { confirm } = Modal;
 
+  const [id, setId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [datas, setDatas] = useState([]);
   const [dataUnit, setDataUnit] = useState([]);
   const [dataCategoryTimeType, setDataCategoryTimeType] = useState([]);
+  const [dataCategoryCriteria, setDataCategoryCriteria] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
   const [isOpenModalEdit, setIsOpenModalEdit] = useState(false);
   const [isOpenModalAddPeriods, setIsOpenModalAddPeriods] = useState(false);
+  const [isOpenModalSetting, setIsOpenModalSetting] = useState(false);
+  const [isOpenModalAddCriteriaToEvaluation, setIsOpenModalAddCriteriaToEvaluation] = useState(false);
+  const [isOpenModalAddCriteriaToListEvaluation, setIsOpenModalAddCriteriaToListEvaluation] = useState(false);
   const [isOpenModalUpdateTimeType, setIsOpenModalUpdateTimeType] = useState(false);
-
-  const [id, setId] = useState(null);
 
   const hasSelected = selectedRowKeys.length > 0;
 
   const fetchApiGetAll = async () => {
     setLoading(true);
-    const data1 = await getAllEvaluation();
-    const data2 = await getAllUnit();
-    const data3 = await getAllCategoryTimeType();
-    setDatas(data1.dataList);
-    setDataUnit(data2.dataList);
-    setDataCategoryTimeType(data3.dataList);
-    setLoading(false);
+    try {
+      const [data1, data2, data3, data4] = await Promise.all([
+        getAllEvaluation(),
+        getAllUnit(),
+        getAllCategoryTimeType(),
+        getAllCategoryCriteria()
+      ]);
+
+      setDatas(data1.dataList);
+      setDataUnit(data2.dataList);
+      setDataCategoryTimeType(data3.dataList);
+      setDataCategoryCriteria(data4.dataList);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      openNotificationTopLeft("error", "Thông báo lỗi!", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onSelectChange = (newSelectedRowKeys) => {
@@ -61,7 +78,10 @@ const Evaluation = () => {
     {
       key: "0",
       label: "Cấu hình",
-      icon: <CiSettings />
+      icon: <CiSettings />,
+      onClick: () => {
+        handleButtonSetting(record.id);
+      }
     },
 
     {
@@ -74,13 +94,11 @@ const Evaluation = () => {
     },
     {
       key: "2",
-      label: "Quản lý tiêu chí",
-      icon: <IoMdAddCircleOutline />
-    },
-    {
-      key: "3",
-      label: "Chi tiết tiêu chí",
-      icon: <FaRegEye />
+      label: "Thiếp lập tiêu chí",
+      icon: <IoMdAddCircleOutline />,
+      onClick: () => {
+        handleButtonAddAndUpdateCriteriaToEvaluation(record.id);
+      }
     }
   ];
 
@@ -92,6 +110,16 @@ const Evaluation = () => {
   const handleButtonEdit = (id) => {
     setId(id);
     setIsOpenModalEdit(true);
+  };
+
+  const handleButtonAddAndUpdateCriteriaToEvaluation = (id) => {
+    setId(id);
+    setIsOpenModalAddCriteriaToEvaluation(true);
+  };
+
+  const handleButtonSetting = (id) => {
+    setId(id);
+    setIsOpenModalSetting(true);
   };
 
   const handleButtonDelete = () => {
@@ -118,11 +146,6 @@ const Evaluation = () => {
       cancelText: "Huỷ bỏ",
       width: 500
     });
-  };
-
-  const handleButtonViewDetail = (id) => {
-    setUserId(id);
-    setIsUserModalOpen(true);
   };
 
   const columns = [
@@ -278,6 +301,66 @@ const Evaluation = () => {
         />
       </Modal>
 
+      <Modal
+        title={"Thêm hoặc chỉnh sửa tiêu chí trong phiếu đánh giá"}
+        open={isOpenModalAddCriteriaToEvaluation}
+        onOk={() => {}}
+        onCancel={() => {
+          setIsOpenModalAddCriteriaToEvaluation(false);
+        }}
+        footer={null}
+        style={{ top: 20 }}
+        width={1600}
+      >
+        <AddAndUpdateCriteriaToEvaluation
+          id={id}
+          listCategoryCriteria={arrayToTree(dataCategoryCriteria)}
+          refetchApi={fetchApiGetAll}
+          closeModal={setIsOpenModalAddCriteriaToEvaluation}
+        />
+      </Modal>
+
+      <Modal
+        title={"Thêm hoặc chỉnh sửa tiêu chí trong danh sách các phiếu đánh giá"}
+        open={isOpenModalAddCriteriaToListEvaluation}
+        onOk={() => {}}
+        onCancel={() => {
+          setIsOpenModalAddCriteriaToListEvaluation(false);
+        }}
+        footer={null}
+        style={{ top: 20 }}
+        width={1600}
+      >
+        <AddAndUpdateCriteriaToListEvaluation
+          listEvaluationId={selectedRowKeys}
+          listCategoryCriteria={arrayToTree(dataCategoryCriteria)}
+          refetchApi={fetchApiGetAll}
+          closeModal={setIsOpenModalAddCriteriaToListEvaluation}
+          setSelectedRowKeysCallBack={setSelectedRowKeys}
+        />
+      </Modal>
+
+      <Modal
+        title={"Cấu hình phiếu đánh giá"}
+        open={isOpenModalSetting}
+        onOk={() => {}}
+        onCancel={() => {
+          setIsOpenModalSetting(false);
+        }}
+        footer={null}
+        style={{ top: 20 }}
+        width={1600}
+      >
+        <SettingEvaluation
+          // listEvaluationId={selectedRowKeys}
+          // listCategoryCriteria={arrayToTree(dataCategoryCriteria)}
+          refetchApi={fetchApiGetAll}
+          closeModal={setIsOpenModalSetting}
+          setSelectedRowKeysCallBack={setSelectedRowKeys}
+          id={id}
+        />
+      </Modal>
+
       <Breadcrumbs />
 
       <Divider />
@@ -316,7 +399,7 @@ const Evaluation = () => {
               cancelText="Không"
               disabled={!hasSelected}
               onConfirm={() => {
-                //onConfirmOpenModalNewCriteria(selectedRowKeys as string[]);
+                setIsOpenModalAddCriteriaToListEvaluation(true);
               }}
             >
               <Button

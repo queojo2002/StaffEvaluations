@@ -19,7 +19,8 @@ export const renderTreeCriteria = (nodes) => {
       endValue: node.endValue,
       unitName: node.unitName,
       parentId: node.parentId,
-      updatedAt: node.updatedAt
+      updatedAt: node.updatedAt,
+      order: node.order
     };
 
     if (node.children && node.children.length > 0) {

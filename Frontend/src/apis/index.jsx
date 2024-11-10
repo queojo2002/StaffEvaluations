@@ -99,6 +99,13 @@ export const insertEvaluation = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluation/insert`, values);
 };
 
+export const insertAndRemoveListEvaluationCriteria = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteria/insertAndRemoveList`, {
+    evaluationIds: values.evaluationIds,
+    listCategoryCriteriaId: values.listCategoryCriteriaId
+  });
+};
+
 export const deleteListUnit = async (ids) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/unit/deleteListUnit`, ids);
 };
@@ -147,6 +154,14 @@ export const getEvaluationById = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluation/${id}`);
 };
 
+export const getListCriteriaByIdEvaluation = async (id) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteria/getListCriteria/${id}`);
+};
+
+export const getEvaluationCriteriaById = async (id) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteria/${id}`);
+};
+
 export const updateRoleAndMenuItems = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/roles/updateRoleAndMenuItems`, {
     roleId: values.roleId,
@@ -192,6 +207,13 @@ export const updateCategoryComment = async (values) => {
 
 export const updateEvaluation = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluation/update`, values);
+};
+
+export const updateSortEvaluation = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteria/updateSort`, {
+    evaluationId: values.evaluationId,
+    listCategoryCriterias: values.listCategoryCriterias
+  });
 };
 
 export const removeRangeRoleAndMenuItems = async (ids) => {

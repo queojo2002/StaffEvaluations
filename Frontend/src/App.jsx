@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from "react-router-dom";
-import { Spin } from "antd";
+import { ConfigProvider, Spin } from "antd";
 
 import { getListMenuOfUser } from "./apis/index.jsx";
 import Main from "./components/Layout/Main.jsx";
@@ -42,26 +42,35 @@ const App = () => {
 
   return (
     <div className="App">
-      <BrowserRouter>
-        {isLoggedIn ? (
-          <Main>
-            {loading ? (
-              <Spin spinning={loading} />
-            ) : (
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                {createRoutes(menu)}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            )}
-          </Main>
-        ) : (
-          <Routes>
-            <Route path="/" element={<SignIn />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        )}
-      </BrowserRouter>
+      <ConfigProvider
+        theme={{
+          token: {
+            fontFamily:
+              "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'"
+          }
+        }}
+      >
+        <BrowserRouter>
+          {isLoggedIn ? (
+            <Main>
+              {loading ? (
+                <Spin spinning={loading} />
+              ) : (
+                <Routes>
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  {createRoutes(menu)}
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              )}
+            </Main>
+          ) : (
+            <Routes>
+              <Route path="/" element={<SignIn />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          )}
+        </BrowserRouter>
+      </ConfigProvider>
     </div>
   );
 };
