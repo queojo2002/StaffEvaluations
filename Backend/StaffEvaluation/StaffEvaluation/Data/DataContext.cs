@@ -33,6 +33,11 @@ public class DataContext : DbContext
     public DbSet<CategoryProsCons> CategoryProsCons { get; set; }
     public DbSet<Evaluation> Evaluations { get; set; }
     public DbSet<EvaluationCriteria> EvaluationCriterias { get; set; }
+    public DbSet<EvaluationUser> EvaluationUsers { get; set; }
+    public DbSet<EvaluationDetailsPersonal> EvaluationDetailsPersonals { get; set; }
+    public DbSet<EvaluationDetailsSupervisor> EvaluationDetailsSupervisors { get; set; }
+    public DbSet<EvaluationAAE> EvaluationAAE { get; set; }
+    public DbSet<EvaluationExplaint> EvaluationExplaints { get; set; }
 
     #endregion
 

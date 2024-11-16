@@ -203,7 +203,7 @@ namespace StaffEvaluation.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoryTimeTypeId")
+                    b.Property<Guid?>("CategoryTimeTypeId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("EvaluationName")
@@ -228,6 +228,62 @@ namespace StaffEvaluation.Migrations
                     b.HasIndex("UnitId");
 
                     b.ToTable("Evaluation");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationAAE", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AddReviews")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Advantages")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DisAdvantages")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("EvaluationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("KetQuaHoatDongCoQuan")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NangLucLanhDaoQuanLy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NangLucTapHopDoanKet")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NhanDinhChieuHuongPhatTrien")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NhanXetUuKhuyetDiem")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("SupervisorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EvaluationId");
+
+                    b.HasIndex("SupervisorId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EvaluationAAE");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationCriteria", b =>
@@ -258,6 +314,156 @@ namespace StaffEvaluation.Migrations
                     b.HasIndex("EvaluationId");
 
                     b.ToTable("EvaluationCriteria");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationDetailsPersonal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AssessmentValue")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("EvaluationCriteriaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EvaluationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EvaluationCriteriaId");
+
+                    b.HasIndex("EvaluationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EvaluationDetailsPersonal");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationDetailsSupervisor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AssessmentValueSupervisor")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("EvaluationDetailsPersonalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EvaluationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserSupervisorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EvaluationDetailsPersonalId");
+
+                    b.HasIndex("EvaluationId");
+
+                    b.HasIndex("UserSupervisorId");
+
+                    b.ToTable("EvaluationDetailsSupervisor");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationExplaint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CategoryCriteriaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EvaluationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FileAttachments")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryCriteriaId");
+
+                    b.HasIndex("EvaluationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EvaluationExplaint");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EvaluationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsManager")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Sort")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EvaluationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EvaluationUser");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.MenuItems", b =>
@@ -540,9 +746,7 @@ namespace StaffEvaluation.Migrations
                 {
                     b.HasOne("StaffEvaluation.Data.Entity.CategoryTimeType", "CategoryTimeType")
                         .WithMany()
-                        .HasForeignKey("CategoryTimeTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CategoryTimeTypeId");
 
                     b.HasOne("StaffEvaluation.Data.Entity.Unit", "Unit")
                         .WithMany()
@@ -553,6 +757,29 @@ namespace StaffEvaluation.Migrations
                     b.Navigation("CategoryTimeType");
 
                     b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationAAE", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.Evaluation", "Evaluation")
+                        .WithMany()
+                        .HasForeignKey("EvaluationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "Supervisor")
+                        .WithMany()
+                        .HasForeignKey("SupervisorId");
+
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Evaluation");
+
+                    b.Navigation("Supervisor");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationCriteria", b =>
@@ -572,6 +799,94 @@ namespace StaffEvaluation.Migrations
                     b.Navigation("CategoryCriteria");
 
                     b.Navigation("Evaluation");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationDetailsPersonal", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.EvaluationCriteria", "EvaluationCriteria")
+                        .WithMany()
+                        .HasForeignKey("EvaluationCriteriaId");
+
+                    b.HasOne("StaffEvaluation.Data.Entity.Evaluation", "Evaluation")
+                        .WithMany()
+                        .HasForeignKey("EvaluationId");
+
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Evaluation");
+
+                    b.Navigation("EvaluationCriteria");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationDetailsSupervisor", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.EvaluationDetailsPersonal", "EvaluationDetailsPersonal")
+                        .WithMany()
+                        .HasForeignKey("EvaluationDetailsPersonalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StaffEvaluation.Data.Entity.Evaluation", "Evaluation")
+                        .WithMany()
+                        .HasForeignKey("EvaluationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserSupervisorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Evaluation");
+
+                    b.Navigation("EvaluationDetailsPersonal");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationExplaint", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.CategoryCriteria", "CategoryCriteria")
+                        .WithMany()
+                        .HasForeignKey("CategoryCriteriaId");
+
+                    b.HasOne("StaffEvaluation.Data.Entity.Evaluation", "Evaluation")
+                        .WithMany()
+                        .HasForeignKey("EvaluationId");
+
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("CategoryCriteria");
+
+                    b.Navigation("Evaluation");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationUser", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.Evaluation", "Evaluation")
+                        .WithMany()
+                        .HasForeignKey("EvaluationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Evaluation");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.RefreshToken", b =>

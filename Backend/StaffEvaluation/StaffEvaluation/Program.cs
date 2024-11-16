@@ -45,6 +45,10 @@ builder.Services.AddScoped<ICategoryCommentRepository, CategoryCommentRepository
 builder.Services.AddScoped<ICategoryProsConsRepository, CategoryProsConsRepository>();
 builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
 builder.Services.AddScoped<IEvaluationCriteriaRepository, EvaluationCriteriaRepository>();
+builder.Services.AddScoped<IEvaluationUserRepository, EvaluationUserRepository>();
+builder.Services.AddScoped<IEvaluationExplaintRepository, EvaluationExplaintRepository>();
+builder.Services.AddScoped<IEvaluationDetailsPersonalRepository, EvaluationDetailsPersonalRepository>();
+builder.Services.AddScoped<IEvaluationDetailsSupervisorRepository, EvaluationDetailsSupervisorRepository>();
 
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);

@@ -15,6 +15,8 @@ public class UserModel
     public string? Address { get; set; }
     public DateTime Birthday { get; set; }
     public string? PositionsName { get; set; }
+    public int? Sort { get; set; }
+    public bool? IsManager { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime UpdatedAt { get; set; }

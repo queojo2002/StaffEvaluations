@@ -368,8 +368,8 @@ public class UserRepository : IUserRepository
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Status = 0,
-                PublicKey = Convert.ToBase64String(rsa.ExportRSAPrivateKey()),
-                PrivateKey = Convert.ToBase64String(rsa.ExportRSAPublicKey()),
+                PublicKey = Convert.ToBase64String(rsa.ExportRSAPublicKey()),
+                PrivateKey = Convert.ToBase64String(rsa.ExportRSAPrivateKey()),
                 UpdatedAt = DateTime.Now
             };
 
@@ -474,6 +474,48 @@ public class UserRepository : IUserRepository
         }
     }
 
+    public async Task<bool> CheckElectronicSignature(IFormFile? file, Guid userId)
+    {
+        if (file == null || file.Length == 0) return false;
+
+        try
+        {
+            var electronicSignature = await _context.ElectronicSignatures
+                .Where(e => e.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            if (electronicSignature == null) return false;
+
+            var storedPublicKey = Convert.FromBase64String(electronicSignature.PublicKey!);
+
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            stream.Position = 0;
+
+            using var reader = new StreamReader(stream);
+            var privateKeyContent = await reader.ReadToEndAsync();
+
+            if (string.IsNullOrWhiteSpace(privateKeyContent) ||
+                !privateKeyContent.Contains("-----BEGIN RSA PRIVATE KEY-----") ||
+                !privateKeyContent.Contains("-----END RSA PRIVATE KEY-----"))
+            {
+                return false;
+            }
+
+            using var rsa = RSA.Create();
+            rsa.ImportFromPem(privateKeyContent.AsSpan());
+
+            // Generate public key from private key
+            var generatedPublicKey = rsa.ExportRSAPublicKey();
+
+            // Compare with the stored public key
+            return generatedPublicKey.SequenceEqual(storedPublicKey);
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
 
 }
 

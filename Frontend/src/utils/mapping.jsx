@@ -2,8 +2,10 @@ import Roles from "../pages/Roles/Roles";
 import Units from "../pages/Units/Units";
 
 import {
+  IconAccountSupervisorOutline,
   IconBarChartFill,
   IconBxMedal,
+  IconBxUserCheck,
   IconCardChecklist,
   IconClipboardTextClock,
   IconComment,
@@ -20,6 +22,8 @@ import {
 import Evaluation from "~/pages/Evaluation/Evaluation";
 import EvaluationsComments from "~/pages/EvaluationComments/EvaluationsComments";
 import EvaluationCriteria from "~/pages/EvaluationCriteria/EvaluationCriteria";
+import SelfEvaluation from "~/pages/EvaluationForms/SelfEvaluation";
+import SupervisorEvaluation from "~/pages/EvaluationForms/SupervisorEvaluation";
 import EvaluationPeriods from "~/pages/EvaluationPeriods/EvaluationPeriods";
 import EvaluationProsCons from "~/pages/EvaluationProsCons/EvaluationProsCons";
 import EvaluationRatings from "~/pages/EvaluationRatings/EvaluationRatings";
@@ -39,7 +43,9 @@ export const iconMapping = {
   IconScoreboardOutline: IconScoreboardOutline,
   IconThumbsUpDown: IconThumbsUpDown,
   IconUser: IconUser,
-  IconUserShield: IconUserShield
+  IconUserShield: IconUserShield,
+  IconBxUserCheck: IconBxUserCheck,
+  IconAccountSupervisorOutline: IconAccountSupervisorOutline
 };
 
 export const componentsMapping = {
@@ -54,5 +60,7 @@ export const componentsMapping = {
   "evaluation-comments": <EvaluationsComments />,
   "evaluation-periods": <EvaluationPeriods />,
   "evaluation-statistics": <Users />,
+  "self-evaluation": <SelfEvaluation />,
+  "supervisor-evaluation": <SupervisorEvaluation />,
   roles: <Roles />
 };

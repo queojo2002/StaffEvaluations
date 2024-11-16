@@ -53,6 +53,30 @@ export const getAllEvaluation = async () => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluation/getAll`);
 };
 
+export const getUsersAllowedToEvaluate = async (evaluationId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationUser/getUsersAllowedToEvaluate/${evaluationId}`);
+};
+
+export const getUsersNotAllowedToEvaluate = async (evaluationId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationUser/getUsersNotAllowedToEvaluate/${evaluationId}`);
+};
+
+export const getAllNonSupervisorUsers = async (evaluationId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationUser/getAllNonSupervisorUsers/${evaluationId}`);
+};
+
+export const getSupervisorsForEvaluation = async (evaluationId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationUser/getSupervisorsForEvaluation/${evaluationId}`);
+};
+
+export const getAllEvaluationExplaintCustom = async (values) => {
+  return await apiInstance.put(`${BACKEND_API}/api/v1/evaluationExplaint/getAllCustom`, {
+    evaluationId: values.evaluationId,
+    categoryCriteriaId: values.categoryCriteriaId,
+    userIds: values.userIds
+  });
+};
+
 export const insertListUnit = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/unit/insertListUnit`, {
     unitName: values.unitName,
@@ -103,6 +127,66 @@ export const insertAndRemoveListEvaluationCriteria = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteria/insertAndRemoveList`, {
     evaluationIds: values.evaluationIds,
     listCategoryCriteriaId: values.listCategoryCriteriaId
+  });
+};
+
+export const insertUserIntoEvaluation = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationUser/insertUserIntoEvaluation`, {
+    evaluationId: values.evaluationId,
+    userIds: values.userIds
+  });
+};
+
+export const insertSupervisorIntoEvaluation = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationUser/insertSupervisorIntoEvaluation`, {
+    evaluationId: values.evaluationId,
+    userId: values.userId,
+    sort: values.sort,
+    isManager: values.isManager
+  });
+};
+
+export const insertEvaluationExplaint = async (values) => {
+  const formData = new FormData();
+
+  formData.append("modelPayload.EvaluationId", values.evaluationId);
+  formData.append("modelPayload.CategoryCriteriaId", values.categoryCriteriaId);
+  formData.append("modelPayload.Note", values.note);
+
+  if (values.fileAttachments) {
+    formData.append("fileAttachments", values.fileAttachments);
+  }
+
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationExplaint/insert`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+};
+
+export const insertEvaluationDetailsPersonal = async (values, file) => {
+  const formData = new FormData();
+  formData.append("evaluationDetailsPersonalCustom", JSON.stringify(values));
+  if (file) {
+    formData.append("file", file);
+  }
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationDetailsPersonal/insertAndUpdateCustom`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+};
+
+export const insertEvaluationDetailsSupervisor = async (values, file) => {
+  const formData = new FormData();
+  formData.append("evaluationDetailsSupervisorCustom", JSON.stringify(values));
+  if (file) {
+    formData.append("file", file);
+  }
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationDetailsSupervisor/insertAndUpdateCustom`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
   });
 };
 
@@ -160,6 +244,24 @@ export const getListCriteriaByIdEvaluation = async (id) => {
 
 export const getEvaluationCriteriaById = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteria/${id}`);
+};
+
+export const getEvaluationOfUser = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluation/getEvaluationOfUser`);
+};
+
+export const getEvaluationOfSupervisor = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluation/getEvaluationOfSupervisor`);
+};
+
+export const getListCriteriaInEvaluationsOfUser = async (id) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteria/getListCriteriaInEvaluationsOfUser/${id}`);
+};
+
+export const getListCriteriaInEvaluationsOfSupervisor = async (evaluationId, idUser) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluationCriteria/getListCriteriaInEvaluationsOfSupervisor?evaluationId=${evaluationId}&idUser=${idUser}`
+  );
 };
 
 export const updateRoleAndMenuItems = async (values) => {
@@ -252,8 +354,48 @@ export const removeEvaluation = async (ids) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluation/removeRange`, ids);
 };
 
+export const removeUserFromEvaluation = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationUser/removeUserFromEvaluation`, {
+    evaluationId: values.evaluationId,
+    userIds: values.userIds
+  });
+};
+
+export const removeSupervisorFromEvaluation = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationUser/removeSupervisorFromEvaluation`, {
+    evaluationId: values.evaluationId,
+    userId: values.userId,
+    sort: 0
+  });
+};
+
 export const downloadSignature = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/user/downloadSignature?id=${id}`, {
+    responseType: "blob"
+  });
+};
+
+export const checkIsManager = async (evaluationId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationUser/checkIsManager/${evaluationId}`);
+};
+
+export const exportEvaluationDocument = async (evaluationId, templateType, outputFormat) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/analyst/exportEvaluationDocument?evaluationId=${evaluationId}&templateType=${templateType}&outputFormat=${outputFormat}`,
+    {
+      responseType: "blob"
+    }
+  );
+};
+
+export const exportPdfOfUser = async (evaluationId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/analyst/exportPdfOfUser?evaluationId=${evaluationId}`, {
+    responseType: "blob"
+  });
+};
+
+export const exportExcelOfUser = async (evaluationId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/analyst/exportExcelOfUser?evaluationId=${evaluationId}`, {
     responseType: "blob"
   });
 };

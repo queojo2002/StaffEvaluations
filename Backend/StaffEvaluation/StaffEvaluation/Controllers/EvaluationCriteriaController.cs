@@ -38,6 +38,45 @@ public class EvaluationCriteriaController : Controller
         return Ok(data);
     }
 
+    [HttpGet("getListCriteriaInEvaluationsOfUser/{id}")]
+    [Authorize]
+    public async Task<IActionResult> GetListCriteriaInEvaluationsOfUser(Guid id)
+    {
+
+        var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        var data = await _evaluationCriteriaRepository.GetListCriteriaInEvaluationsOfUser(id, userId);
+
+        if (data.Data != null)
+        {
+            var dataTree = await _evaluationCriteriaRepository.CriteriaToTree(data.Data, userId, 1);
+
+            data.Data.CriteriaList = dataTree.CriteriaList;
+        }
+
+
+        return Ok(data);
+    }
+
+    [HttpGet("getListCriteriaInEvaluationsOfSupervisor")]
+    [Authorize]
+    public async Task<IActionResult> GetListCriteriaInEvaluationsOfSupervisor(Guid evaluationId, Guid idUser)
+    {
+        var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        var data = await _evaluationCriteriaRepository.GetListCriteriaInEvaluationsOfSupervisor(evaluationId, idUser, userId);
+
+        if (data.Data != null)
+        {
+            var dataTree = await _evaluationCriteriaRepository.CriteriaToTree(data.Data, userId, 2);
+
+            data.Data.CriteriaList = dataTree.CriteriaList;
+        }
+
+        return Ok(data);
+    }
+
+
 
     [HttpPost("insertAndRemoveList")]
     [Authorize]

@@ -29,6 +29,30 @@ public class EvaluationController : Controller
         return Ok(get);
     }
 
+
+    [HttpGet("getEvaluationOfUser")]
+    [Authorize]
+    public async Task<IActionResult> GetEvaluationOfUser()
+    {
+        var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        var get = await _evaluationRepository.GetEvaluationOfUser(userId);
+
+        return Ok(get);
+    }
+
+    [HttpGet("getEvaluationOfSupervisor")]
+    [Authorize]
+    public async Task<IActionResult> GetEvaluationOfSupervisor()
+    {
+        var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        var get = await _evaluationRepository.GetEvaluationOfSupervisor(userId);
+
+        return Ok(get);
+    }
+
+
     [HttpGet("{id}")]
     [Authorize]
     public async Task<IActionResult> GetById(Guid id)

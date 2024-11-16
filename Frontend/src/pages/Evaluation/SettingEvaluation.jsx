@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Tabs } from "antd";
 
 import AddSupervisorToEvaluation from "./SettingEvaluationCompoments/AddSupervisorToEvaluation";
@@ -7,6 +8,7 @@ import DetailsAndSortingEvaluationsCriteria from "~/pages/Evaluation/SettingEval
 
 const SettingEvaluation = (props) => {
   const { refetchApi, closeModal, id } = props;
+  const [activeKey, setActiveKey] = useState("1");
 
   const items = [
     {
@@ -17,7 +19,6 @@ const SettingEvaluation = (props) => {
     {
       key: "2",
       label: `Cấu hình người dùng`,
-      children: `Tab 3`,
       children: <AddUserToEvaluation id={id} />
     },
     {
@@ -27,9 +28,13 @@ const SettingEvaluation = (props) => {
     }
   ];
 
+  useEffect(() => {
+    setActiveKey("1");
+  }, [id]);
+
   return (
     <>
-      <Tabs defaultActiveKey="1" items={items} />
+      <Tabs activeKey={activeKey} onChange={setActiveKey} items={items} />
     </>
   );
 };
