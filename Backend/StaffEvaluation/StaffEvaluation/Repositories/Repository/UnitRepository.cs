@@ -33,6 +33,71 @@ public class UnitRepository : IUnitRepository
         );
     }
 
+    public async Task<List<Unit>> GetAllParentOfUnitAsync(Guid unitId)
+    {
+        var sqlQuery = @"
+            WITH RecursiveCTE AS (
+                SELECT 
+                    Unit.*,
+                    0 AS Level
+                FROM Unit
+                WHERE Id = {0}
+
+                UNION ALL
+
+                SELECT 
+                    p.*,
+                    r.Level + 1 AS Level
+                FROM Unit p
+                INNER JOIN RecursiveCTE r ON p.Id = r.ParentId
+            )
+            SELECT 
+                RecursiveCTE.Id,
+                RecursiveCTE.UnitName,
+                RecursiveCTE.ParentId,
+                RecursiveCTE.IsDeleted,
+                RecursiveCTE.UpdatedAt
+            FROM RecursiveCTE
+            ORDER BY Level, Id;
+        ";
+
+        // Thực thi truy vấn SQL
+        var result = await _context.Units!
+            .FromSqlRaw(sqlQuery, unitId)
+            .ToListAsync();
+
+        return result;
+    }
+
+    public async Task<PagedApiResponse<Unit>> GetAllChildOfUnitAsync(Guid unitId)
+    {
+        var sqlQuery = @"
+                        WITH recursiveCTE AS (
+                        SELECT 
+                            Unit.*,
+                            0 AS Level
+                        FROM Unit
+                        WHERE Id = {0}
+
+                        UNION ALL
+
+                        SELECT 
+                            c.*,
+                            r.Level + 1 AS Level
+                        FROM Unit c
+                        INNER JOIN RecursiveCTE r ON c.ParentId = r.Id
+                    )
+                    Select 
+	                    *
+                    From 
+	                    Unit u
+                    Where u.Id In (SELECT recursiveCTE.Id FROM recursiveCTE) ;";
+
+        var result = await _context.Units!.FromSqlRaw(sqlQuery, unitId).ToListAsync();
+
+        return new Pagination().HandleGetAllRespond(0, 0, result, result.Count);
+    }
+
     public async Task<PagedApiResponse<UnitModel>> GetByIdAsync(Guid id)
     {
         var units = await _context.Units!.FindAsync(id);

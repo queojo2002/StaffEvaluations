@@ -10,6 +10,7 @@ public interface IEvaluationRepository : IRepository<EvaluationModel>
     Task<PagedApiResponse<EvaluationModel>> UpdateListAsync(EvaluationUpdatePayload entity);
     Task<PagedApiResponse<EvaluationModel>> GetEvaluationOfUser(Guid userId);
     Task<PagedApiResponse<EvaluationModel>> GetEvaluationOfSupervisor(Guid userCurrentId);
+    Task<PagedApiResponse<EvaluationModel>> GetEvaluationOfUnit(Guid unitId);
 
 }
 

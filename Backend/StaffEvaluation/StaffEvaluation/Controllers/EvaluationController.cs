@@ -24,7 +24,9 @@ public class EvaluationController : Controller
     [Authorize]
     public async Task<IActionResult> GetAll()
     {
-        var get = await _evaluationRepository.GetAllPagedAsync(0, 0);
+        var unitId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _evaluationRepository.GetEvaluationOfUnit(unitId);
 
         return Ok(get);
     }

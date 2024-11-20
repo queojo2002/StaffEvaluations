@@ -11,17 +11,20 @@ namespace StaffEvaluation.Repositories.Repository;
 
 public class EvaluationRepository : IEvaluationRepository
 {
+    private IUnitRepository _unitRepository;
     private DataContext _context;
     private IMapper _mapper;
 
-    public EvaluationRepository(DataContext context, IMapper mapper)
+    public EvaluationRepository(DataContext context, IMapper mapper, IUnitRepository unitRepository)
     {
         _context = context;
         _mapper = mapper;
+        _unitRepository = unitRepository;
     }
 
     public async Task<PagedApiResponse<EvaluationModel>> GetAllPagedAsync(int pageNumber, int pageSize)
     {
+
         var evaluations = await (from e in _context.Evaluations
                                  join u in _context.Units! on e.UnitId equals u.Id
                                  join ct in _context.CategoryTimeTypes on e.CategoryTimeTypeId equals ct.Id into ctGroup
@@ -40,7 +43,6 @@ public class EvaluationRepository : IEvaluationRepository
                                      IsDeleted = e.IsDeleted,
                                      UpdatedAt = e.UpdatedAt,
                                  }).OrderByDescending(e => e.UpdatedAt).ToListAsync();
-
 
         return new Pagination().HandleGetAllRespond(pageNumber, pageSize, evaluations, evaluations.Count);
     }
@@ -76,6 +78,13 @@ public class EvaluationRepository : IEvaluationRepository
 
     public async Task<PagedApiResponse<EvaluationModel>> UpdateAsync(EvaluationModel entity)
     {
+        var checkIsEvaluation = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == entity.Id).FirstOrDefaultAsync();
+
+        if (checkIsEvaluation != null)
+        {
+            return new ApiResult().Failure<EvaluationModel>("Phiếu đánh giá này đã có dữ liệu đánh giá nên không thể chỉnh sửa được nữa!");
+        }
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -123,6 +132,15 @@ public class EvaluationRepository : IEvaluationRepository
 
         try
         {
+
+            var checkIsEvaluation = await _context.EvaluationDetailsPersonals.Where(e => entity.EvaluationIds.Contains(e.EvaluationId)).FirstOrDefaultAsync();
+
+            if (checkIsEvaluation != null)
+            {
+                return new ApiResult().Failure<EvaluationModel>("Đã có phiếu đánh giá tồn tại dữ liệu đánh giá nên không thể chỉnh sửa được nữa!");
+            }
+
+
             var evaluationToUpdate = await _context.Evaluations
                 .Where(c => entity.EvaluationIds.Contains(c.Id) && !c.IsDeleted)
                 .ToListAsync();
@@ -200,6 +218,13 @@ public class EvaluationRepository : IEvaluationRepository
 
         try
         {
+            var checkIsEvaluation = await _context.EvaluationDetailsPersonals.Where(e => ids.Contains(e.EvaluationId)).FirstOrDefaultAsync();
+
+            if (checkIsEvaluation != null)
+            {
+                return new ApiResult().Failure<EvaluationModel>("Đã có phiếu đánh giá tồn tại dữ liệu đánh giá nên không thể xoá!");
+            }
+
             var evaluationToDelete = await _context.Evaluations
                 .Where(c => ids.Contains(c.Id) && !c.IsDeleted)
                 .ToListAsync();
@@ -425,6 +450,65 @@ public class EvaluationRepository : IEvaluationRepository
             }
         }
         return new Pagination().HandleGetAllRespond(0, 0, evaluations, evaluations.Count);
+    }
+
+    public async Task<PagedApiResponse<EvaluationModel>> GetEvaluationOfUnit(Guid unitId)
+    {
+        var sqlQuery = @"
+                        WITH recursiveCTE AS (
+                            SELECT 
+                                Unit.*,
+                                0 AS Level
+                            FROM Unit
+                            WHERE Id = {0}
+
+                            UNION ALL
+
+                            SELECT 
+                                c.*,
+                                r.Level + 1 AS Level
+                            FROM Unit c
+                            INNER JOIN RecursiveCTE r ON c.ParentId = r.Id
+                        )
+                        Select 
+	                        e.Id,
+	                        e.EvaluationName,
+	                        u.Id as 'UnitId',
+                            ct.Id as 'CategoryTimeTypeId',
+	                        u.UnitName,
+	                        ct.FromDate,
+	                        ct.ToDate,
+	                        e.Status,
+	                        e.IsDeleted,
+	                        e.UpdatedAt
+                        From 
+	                        Evaluation e
+                        LEFT JOIN Unit u on u.Id = e.UnitId
+                        LEFT JOIN CategoryTimeType ct on ct.Id = e.CategoryTimeTypeId
+                        Where e.UnitId In (SELECT recursiveCTE.Id FROM recursiveCTE) 
+                        Order By e.UpdatedAt DESC";
+
+        var rawResult = await _context.Evaluations
+        .FromSqlRaw(sqlQuery, unitId)
+        .ToListAsync();
+
+
+
+        var result = rawResult.Select(e => new EvaluationModel
+        {
+            Id = e.Id,
+            CategoryTimeTypeId = e.CategoryTimeTypeId != null ? e.CategoryTimeTypeId : null,
+            EvaluationName = e.EvaluationName,
+            UnitId = e.UnitId,
+            UnitName = _context.Units!.Where(u => u.Id == e.UnitId).FirstOrDefault()!.UnitName,
+            FromDate = e.CategoryTimeTypeId != null ? _context.CategoryTimeTypes!.Where(ct => ct.Id == e.CategoryTimeTypeId).FirstOrDefault()!.FromDate : null,
+            ToDate = e.CategoryTimeTypeId != null ? _context.CategoryTimeTypes!.Where(ct => ct.Id == e.CategoryTimeTypeId).FirstOrDefault()!.ToDate : null,
+            Status = e.Status,
+            IsDeleted = e.IsDeleted,
+            UpdatedAt = e.UpdatedAt
+        }).ToList();
+
+        return new Pagination().HandleGetAllRespond(0, 0, result, result.Count);
     }
 }
 

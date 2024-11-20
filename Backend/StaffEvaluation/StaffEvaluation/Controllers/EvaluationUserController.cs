@@ -26,7 +26,9 @@ public class EvaluationUserController : Controller
     [Authorize]
     public async Task<IActionResult> GetUsersAllowedToEvaluate(Guid evaluationId)
     {
-        var get = await _evaluationUserRepository.GetUsersAllowedToEvaluate(evaluationId);
+        var unitId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _evaluationUserRepository.GetUsersAllowedToEvaluate(evaluationId, unitId);
 
         return Ok(get);
     }
@@ -35,7 +37,9 @@ public class EvaluationUserController : Controller
     [Authorize]
     public async Task<IActionResult> GetUsersNotAllowedToEvaluate(Guid evaluationId)
     {
-        var get = await _evaluationUserRepository.GetUsersNotAllowedToEvaluate(evaluationId);
+        var unitId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _evaluationUserRepository.GetUsersNotAllowedToEvaluate(evaluationId, unitId);
 
         return Ok(get);
     }
@@ -44,7 +48,9 @@ public class EvaluationUserController : Controller
     [Authorize]
     public async Task<IActionResult> GetAllNonSupervisorUsers(Guid evaluationId)
     {
-        var get = await _evaluationUserRepository.GetAllNonSupervisorUsersAsync(evaluationId);
+        var unitId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _evaluationUserRepository.GetAllNonSupervisorUsersAsync(evaluationId, unitId);
 
         return Ok(get);
     }

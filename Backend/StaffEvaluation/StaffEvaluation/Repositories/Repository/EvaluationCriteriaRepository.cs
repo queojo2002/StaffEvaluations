@@ -208,7 +208,6 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
             return new ApiResult().Failure<EvaluationCriteriaModel>("Không tìm thấy phiếu đánh giá hoặc phiếu đánh giá đã bị xóa.");
         }
 
-
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -226,6 +225,15 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
             {
                 foreach (var evaluationId in entity.EvaluationIds)
                 {
+                    var checkIsEvaluation = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == evaluationId).FirstOrDefaultAsync();
+
+                    if (checkIsEvaluation != null)
+                    {
+                        await transaction.RollbackAsync();
+
+                        return new ApiResult().Failure<EvaluationCriteriaModel>("Đã có phiếu đánh giá có dữ liệu đánh giá nên không thể chỉnh sửa tiêu chí được!");
+                    }
+
                     foreach (var categoryCriteriaId in entity.ListCategoryCriteriaId)
                     {
                         EvaluationCriteria evaluationCriteria = new EvaluationCriteria()

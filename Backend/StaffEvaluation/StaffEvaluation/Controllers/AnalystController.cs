@@ -32,11 +32,13 @@ public class AnalystController : Controller
 {
     private readonly IEvaluationDetailsPersonalRepository _evaluationDetailsPersonalRepository;
     private readonly IEvaluationCriteriaRepository _evaluationCriteriaRepository;
+    private readonly IUnitRepository _unitRepository;
     private readonly DataContext _context;
     private readonly IConfiguration _configuration;
 
-    public AnalystController(IConfiguration configuration, IEvaluationCriteriaRepository evaluationCriteriaRepository, IEvaluationDetailsPersonalRepository evaluationDetailsPersonalRepository, DataContext context)
+    public AnalystController(IUnitRepository unitRepository, IConfiguration configuration, IEvaluationCriteriaRepository evaluationCriteriaRepository, IEvaluationDetailsPersonalRepository evaluationDetailsPersonalRepository, DataContext context)
     {
+        _unitRepository = unitRepository;
         _evaluationCriteriaRepository = evaluationCriteriaRepository;
         _evaluationDetailsPersonalRepository = evaluationDetailsPersonalRepository;
         _context = context;
@@ -60,6 +62,8 @@ public class AnalystController : Controller
             var userType = await _context.UserTypes!.Where(e => e.Id == user.UserTypeId).FirstOrDefaultAsync();
 
             var unit = await _context.Units!.Where(u => u.Id == user.UnitId).FirstOrDefaultAsync();
+
+            var unitParent = await _unitRepository.GetAllParentOfUnitAsync(user.UnitId);
 
             var evaluationDetailsPersonal = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == evaluationId && e.UserId == userCurrentId && e.Status >= 2).FirstOrDefaultAsync();
 
@@ -136,14 +140,14 @@ public class AnalystController : Controller
             var scoreSupervisor = GetGradingName(dataOfUser.ListTotal.LastOrDefault());
 
             // Xử lý nếu người dùng là admin thì lấy đơn vị là admin luôn, ngược lại lấy đơn vị cao nhất dưới admin
-            /*if (getUnitParent.ListPayload != null && getUnitParent.ListPayload.Length == 1)
+            if (unitParent != null && unitParent.Count == 1)
             {
-                value.Add("unitParent", getUnitParent.ListPayload[0].UnitName);
+                value.Add("unitParent", unitParent[0].UnitName!);
             }
             else
             {
-                value.Add("unitParent", getUnitParent.ListPayload[1].UnitName);
-            }*/
+                value.Add("unitParent", unitParent[1].UnitName!);
+            }
 
             value.Add("unitChildren", unit.UnitName!);
 
@@ -368,7 +372,7 @@ public class AnalystController : Controller
         }
         catch (Exception ex)
         {
-            return BadRequest();
+            return BadRequest(ex.Message);
         }
 
 

@@ -15,11 +15,13 @@ public class EvaluationUserRepository : IEvaluationUserRepository
 
     private DataContext _context;
     private IMapper _mapper;
+    private IUnitRepository _unitRepository;
 
-    public EvaluationUserRepository(DataContext context, IMapper mapper)
+    public EvaluationUserRepository(DataContext context, IMapper mapper, IUnitRepository unitRepository)
     {
         _context = context;
         _mapper = mapper;
+        _unitRepository = unitRepository;
     }
 
     public Task<PagedApiResponse<EvaluationUserModel>> GetAllPagedAsync(int pageNumber, int pageSize)
@@ -32,7 +34,7 @@ public class EvaluationUserRepository : IEvaluationUserRepository
         throw new NotImplementedException();
     }
 
-    public async Task<PagedApiResponse<UserModel>> GetAllNonSupervisorUsersAsync(Guid evaluationId)
+    public async Task<PagedApiResponse<UserModel>> GetAllNonSupervisorUsersAsync(Guid evaluationId, Guid unitCurrentId)
     {
         var evaluation = await _context.Evaluations.Where(e => e.Id == evaluationId && !e.IsDeleted).SingleOrDefaultAsync();
 
@@ -41,7 +43,9 @@ public class EvaluationUserRepository : IEvaluationUserRepository
             return new ApiResult().Failure<UserModel>("Không tìm thấy thông tin hoặc đã bị xóa.");
         }
 
-        var unitIds = await GetAllParentAndChildUnitIds(evaluation.UnitId);
+        var unitIdsRaw = await _unitRepository.GetAllChildOfUnitAsync(unitCurrentId);
+
+        var unitIds = unitIdsRaw.DataList!.Select(e => e.Id).ToList();
 
         var allowedUserIds = await _context.EvaluationUsers
             .Where(eu => eu.EvaluationId == evaluationId && eu.Type == 2 && !eu.IsDeleted)
@@ -102,7 +106,7 @@ public class EvaluationUserRepository : IEvaluationUserRepository
         return new Pagination().HandleGetAllRespond(0, 0, datas, datas.Count);
     }
 
-    public async Task<PagedApiResponse<UserModel>> GetUsersAllowedToEvaluate(Guid evaluationId)
+    public async Task<PagedApiResponse<UserModel>> GetUsersAllowedToEvaluate(Guid evaluationId, Guid unitCurrentId)
     {
         var evaluation = await _context.Evaluations.Where(e => e.Id == evaluationId && !e.IsDeleted).SingleOrDefaultAsync();
 
@@ -111,7 +115,9 @@ public class EvaluationUserRepository : IEvaluationUserRepository
             return new ApiResult().Failure<UserModel>("Không tìm thấy thông tin hoặc đã bị xóa.");
         }
 
-        var unitIds = await GetAllParentAndChildUnitIds(evaluation.UnitId);
+        var unitIdsRaw = await _unitRepository.GetAllChildOfUnitAsync(unitCurrentId);
+
+        var unitIds = unitIdsRaw.DataList!.Select(e => e.Id).ToList();
 
         var allowedUserIds = await _context.EvaluationUsers
             .Where(eu => eu.EvaluationId == evaluationId && !eu.IsDeleted && eu.Type == 1)
@@ -142,7 +148,7 @@ public class EvaluationUserRepository : IEvaluationUserRepository
         return new Pagination().HandleGetAllRespond(0, 0, datas, datas.Count);
     }
 
-    public async Task<PagedApiResponse<UserModel>> GetUsersNotAllowedToEvaluate(Guid evaluationId)
+    public async Task<PagedApiResponse<UserModel>> GetUsersNotAllowedToEvaluate(Guid evaluationId, Guid unitCurrentId)
     {
         var evaluation = await _context.Evaluations.Where(e => e.Id == evaluationId && !e.IsDeleted).SingleOrDefaultAsync();
 
@@ -151,7 +157,9 @@ public class EvaluationUserRepository : IEvaluationUserRepository
             return new ApiResult().Failure<UserModel>("Không tìm thấy thông tin hoặc đã bị xóa.");
         }
 
-        var unitIds = await GetAllParentAndChildUnitIds(evaluation.UnitId);
+        var unitIdsRaw = await _unitRepository.GetAllChildOfUnitAsync(unitCurrentId);
+
+        var unitIds = unitIdsRaw.DataList!.Select(e => e.Id).ToList();
 
 
         var allowedUserIds = await _context.EvaluationUsers
@@ -298,6 +306,13 @@ public class EvaluationUserRepository : IEvaluationUserRepository
             }
         }
 
+        var checkIsEvaluation = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == model.EvaluationId).FirstOrDefaultAsync();
+
+        if (checkIsEvaluation != null)
+        {
+            return new ApiResult().Failure<EvaluationUserModel>("Phiếu này đã có dữ liệu đánh giá nên không thể chỉnh sửa giám sát viên được nữa!");
+        }
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -334,6 +349,14 @@ public class EvaluationUserRepository : IEvaluationUserRepository
 
     public async Task<PagedApiResponse<EvaluationUserModel>> RemoveSupervisorFromEvaluationAsync(EvaluationUserAddSupervisorPayload model)
     {
+
+        var checkIsEvaluation = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == model.EvaluationId).FirstOrDefaultAsync();
+
+        if (checkIsEvaluation != null)
+        {
+            return new ApiResult().Failure<EvaluationUserModel>("Phiếu này đã có dữ liệu đánh giá nên không thể chỉnh sửa giám sát viên được nữa!");
+        }
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -361,58 +384,6 @@ public class EvaluationUserRepository : IEvaluationUserRepository
 
             return new ApiResult().Failure<EvaluationUserModel>($"Lỗi khi xóa giám sát viên khỏi phiếu đánh giá: {ex.Message}");
         }
-    }
-
-
-    private async Task<List<Guid>> GetAllParentAndChildUnitIds(Guid unitId, HashSet<Guid> processedUnitIds = null)
-    {
-        if (processedUnitIds == null)
-        {
-            processedUnitIds = new HashSet<Guid>();
-        }
-
-        var unitIds = new List<Guid> { unitId };
-        processedUnitIds.Add(unitId);
-
-        // Lấy các đơn vị cha
-        Guid? currentUnitId = unitId;
-        while (currentUnitId.HasValue && currentUnitId != Guid.Empty)
-        {
-            var parentUnit = await _context.Units!
-                .Where(unit => unit.Id == currentUnitId)
-                .Select(unit => new { unit.ParentId })
-                .FirstOrDefaultAsync();
-
-            if (parentUnit?.ParentId == null || processedUnitIds.Contains(parentUnit.ParentId.Value))
-            {
-                break;
-            }
-
-            unitIds.Add(parentUnit.ParentId.Value);
-            processedUnitIds.Add(parentUnit.ParentId.Value);
-            currentUnitId = parentUnit.ParentId;
-        }
-
-        // Lấy các đơn vị con
-        async Task GetChildUnits(Guid parentId)
-        {
-            var childUnits = await _context.Units!
-                .Where(unit => unit.ParentId == parentId)
-                .ToListAsync();
-
-            foreach (var childUnit in childUnits)
-            {
-                if (processedUnitIds.Add(childUnit.Id)) // Kiểm tra và thêm nếu chưa xử lý
-                {
-                    unitIds.Add(childUnit.Id);
-                    await GetChildUnits(childUnit.Id); // Đệ quy để lấy các con của đơn vị con
-                }
-            }
-        }
-
-        await GetChildUnits(unitId); // Bắt đầu lấy các đơn vị con từ unitId
-
-        return unitIds.Distinct().ToList();
     }
 
 

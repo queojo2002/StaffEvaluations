@@ -6,10 +6,10 @@ namespace StaffEvaluation.Repositories.IRepository;
 
 public interface IEvaluationUserRepository : IRepository<EvaluationUserModel>
 {
-    Task<PagedApiResponse<UserModel>> GetUsersNotAllowedToEvaluate(Guid evaluationId);
-    Task<PagedApiResponse<UserModel>> GetUsersAllowedToEvaluate(Guid evaluationId);
+    Task<PagedApiResponse<UserModel>> GetUsersNotAllowedToEvaluate(Guid evaluationId, Guid unitCurrentId);
+    Task<PagedApiResponse<UserModel>> GetUsersAllowedToEvaluate(Guid evaluationId, Guid unitCurrentId);
     Task<PagedApiResponse<UserModel>> GetSupervisorsForEvaluation(Guid evaluationId);
-    Task<PagedApiResponse<UserModel>> GetAllNonSupervisorUsersAsync(Guid evaluationId);
+    Task<PagedApiResponse<UserModel>> GetAllNonSupervisorUsersAsync(Guid evaluationId, Guid unitCurrentId);
     Task<PagedApiResponse<EvaluationUserModel>> InsertUserIntoEvaluationAsync(EvaluationUserAddPayload model);
     Task<PagedApiResponse<EvaluationUserModel>> RemoveUserFromEvaluationAsync(EvaluationUserAddPayload model);
 

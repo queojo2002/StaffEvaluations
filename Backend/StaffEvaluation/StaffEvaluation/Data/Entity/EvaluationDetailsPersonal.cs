@@ -10,7 +10,7 @@ public class EvaluationDetailsPersonal
     [Key]
     public Guid Id { get; set; }
     [ForeignKey("Evaluation")]
-    public Guid? EvaluationId { get; set; }
+    public Guid EvaluationId { get; set; }
     [ForeignKey("User")]
     public Guid? UserId { get; set; }
     [ForeignKey("EvaluationCriteria")]

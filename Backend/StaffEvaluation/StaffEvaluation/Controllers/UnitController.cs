@@ -27,7 +27,10 @@ public class UnitController : Controller
     [Authorize]
     public async Task<IActionResult> GetAll()
     {
-        var get = await _unitRepository.GetAllPagedAsync(0, 0);
+        var unitId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+
+        var get = await _unitRepository.GetAllChildOfUnitAsync(unitId);
 
         return Ok(get);
     }
