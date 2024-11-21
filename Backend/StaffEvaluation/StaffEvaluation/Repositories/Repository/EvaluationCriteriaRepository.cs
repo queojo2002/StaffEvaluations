@@ -163,6 +163,13 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
 
         try
         {
+            var checkE = await _context.Evaluations.Where(e => e.Status != 0 && e.Id == model.EvaluationId).FirstOrDefaultAsync();
+
+            if (checkE != null)
+            {
+                return new ApiResult().Failure<CategoryCriteriaModel>("Phiếu đánh giá này đã được tổng hợp và chuyển nên không thể thao tác được nữa.");
+            }
+
 
             foreach (var item in model.ListCategoryCriterias!)
             {
@@ -200,12 +207,12 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
         }
 
         var evaluations = await _context.Evaluations
-            .Where(e => entity.EvaluationIds.Contains(e.Id) && !e.IsDeleted)
+            .Where(e => entity.EvaluationIds.Contains(e.Id) && !e.IsDeleted && e.Status == 0)
             .ToListAsync();
 
         if (evaluations.Count == 0)
         {
-            return new ApiResult().Failure<EvaluationCriteriaModel>("Không tìm thấy phiếu đánh giá hoặc phiếu đánh giá đã bị xóa.");
+            return new ApiResult().Failure<EvaluationCriteriaModel>("Không tìm thấy phiếu đánh giá hoặc phiếu đánh giá đã bị xóa hoặc đã được tổng hợp và chuyển.");
         }
 
         using var transaction = await _context.Database.BeginTransactionAsync();

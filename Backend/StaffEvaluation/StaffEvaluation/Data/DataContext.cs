@@ -38,6 +38,8 @@ public class DataContext : DbContext
     public DbSet<EvaluationDetailsSupervisor> EvaluationDetailsSupervisors { get; set; }
     public DbSet<EvaluationAAE> EvaluationAAE { get; set; }
     public DbSet<EvaluationExplaint> EvaluationExplaints { get; set; }
+    public DbSet<EvaluationConsolidationAndTransfer> EvaluationConsolidationAndTransfer { get; set; }
+    public DbSet<EvaluationConsolidationAndTransferDetails> EvaluationConsolidationAndTransferDetails { get; set; }
 
     #endregion
 

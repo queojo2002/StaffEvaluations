@@ -5,6 +5,7 @@ import {
   IconAccountSupervisorOutline,
   IconBarChartFill,
   IconBxMedal,
+  IconBxTransfer,
   IconBxUserCheck,
   IconCardChecklist,
   IconClipboardTextClock,
@@ -27,6 +28,7 @@ import SupervisorEvaluation from "~/pages/EvaluationForms/SupervisorEvaluation";
 import EvaluationPeriods from "~/pages/EvaluationPeriods/EvaluationPeriods";
 import EvaluationProsCons from "~/pages/EvaluationProsCons/EvaluationProsCons";
 import EvaluationRatings from "~/pages/EvaluationRatings/EvaluationRatings";
+import EvaluationConsolidationAndTransfer from "~/pages/Statistics/EvaluationConsolidationAndTransfer";
 import Users from "~/pages/Users/Users";
 import UserType from "~/pages/UserType/UserType";
 
@@ -45,7 +47,8 @@ export const iconMapping = {
   IconUser: IconUser,
   IconUserShield: IconUserShield,
   IconBxUserCheck: IconBxUserCheck,
-  IconAccountSupervisorOutline: IconAccountSupervisorOutline
+  IconAccountSupervisorOutline: IconAccountSupervisorOutline,
+  IconBxTransfer: IconBxTransfer
 };
 
 export const componentsMapping = {
@@ -62,5 +65,6 @@ export const componentsMapping = {
   "evaluation-statistics": <Users />,
   "self-evaluation": <SelfEvaluation />,
   "supervisor-evaluation": <SupervisorEvaluation />,
-  roles: <Roles />
+  roles: <Roles />,
+  "consolidation-and-transfer": <EvaluationConsolidationAndTransfer />
 };

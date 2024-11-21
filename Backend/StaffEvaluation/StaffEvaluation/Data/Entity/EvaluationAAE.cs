@@ -9,12 +9,22 @@ public class EvaluationAAE
 {
     [Key]
     public Guid Id { get; set; }
+
+
     [ForeignKey("Evaluation")]
     public Guid EvaluationId { get; set; }
-    [ForeignKey("UserId")]
+
+
+    [ForeignKey("User")]
+    public Guid? UserId { get; set; }
     public User? User { get; set; }
-    [ForeignKey("SupervisorId")]
+
+
+    [ForeignKey("Supervisor")]
+    public Guid? SupervisorId { get; set; }
     public User? Supervisor { get; set; }
+
+
     public string? Advantages { get; set; }
     public string? DisAdvantages { get; set; }
     public string? AddReviews { get; set; }

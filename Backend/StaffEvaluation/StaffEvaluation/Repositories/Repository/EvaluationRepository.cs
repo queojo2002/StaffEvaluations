@@ -91,9 +91,9 @@ public class EvaluationRepository : IEvaluationRepository
         {
             var evaluationToUpdate = await _context.Evaluations.FindAsync(entity.Id);
 
-            if (evaluationToUpdate == null || evaluationToUpdate.IsDeleted)
+            if (evaluationToUpdate == null || evaluationToUpdate.IsDeleted || evaluationToUpdate.Status != 0)
             {
-                return new ApiResult().Failure<EvaluationModel>("Không tìm thấy phiếu đánh giá hoặc phiếu đánh giá đã bị xóa.");
+                return new ApiResult().Failure<EvaluationModel>("Không tìm thấy phiếu đánh giá hoặc phiếu đánh giá đã bị xóa hoặc đã được tổng hợp và chuyển.");
             }
 
             evaluationToUpdate.EvaluationName = entity.EvaluationName;
@@ -142,7 +142,7 @@ public class EvaluationRepository : IEvaluationRepository
 
 
             var evaluationToUpdate = await _context.Evaluations
-                .Where(c => entity.EvaluationIds.Contains(c.Id) && !c.IsDeleted)
+                .Where(c => entity.EvaluationIds.Contains(c.Id) && !c.IsDeleted && c.Status == 0)
                 .ToListAsync();
 
             if (!evaluationToUpdate.Any())
@@ -226,7 +226,7 @@ public class EvaluationRepository : IEvaluationRepository
             }
 
             var evaluationToDelete = await _context.Evaluations
-                .Where(c => ids.Contains(c.Id) && !c.IsDeleted)
+                .Where(c => ids.Contains(c.Id) && !c.IsDeleted && c.Status == 0)
                 .ToListAsync();
 
             if (!evaluationToDelete.Any())
@@ -485,7 +485,7 @@ public class EvaluationRepository : IEvaluationRepository
 	                        Evaluation e
                         LEFT JOIN Unit u on u.Id = e.UnitId
                         LEFT JOIN CategoryTimeType ct on ct.Id = e.CategoryTimeTypeId
-                        Where e.UnitId In (SELECT recursiveCTE.Id FROM recursiveCTE) 
+                        Where e.UnitId In (SELECT recursiveCTE.Id FROM recursiveCTE) AND e.IsDeleted = 0
                         Order By e.UpdatedAt DESC";
 
         var rawResult = await _context.Evaluations

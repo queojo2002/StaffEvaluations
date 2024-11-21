@@ -49,6 +49,8 @@ builder.Services.AddScoped<IEvaluationUserRepository, EvaluationUserRepository>(
 builder.Services.AddScoped<IEvaluationExplaintRepository, EvaluationExplaintRepository>();
 builder.Services.AddScoped<IEvaluationDetailsPersonalRepository, EvaluationDetailsPersonalRepository>();
 builder.Services.AddScoped<IEvaluationDetailsSupervisorRepository, EvaluationDetailsSupervisorRepository>();
+builder.Services.AddScoped<IEvaluationConsolidationAndTransferRepository, EvaluationConsolidationAndTransferRepository>();
+builder.Services.AddScoped<IEvaluationConsolidationAndTransferDetailsRepository, EvaluationConsolidationAndTransferDetailsRepository>();
 
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);

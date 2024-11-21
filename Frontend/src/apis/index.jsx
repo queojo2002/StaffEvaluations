@@ -69,12 +69,28 @@ export const getSupervisorsForEvaluation = async (evaluationId) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationUser/getSupervisorsForEvaluation/${evaluationId}`);
 };
 
+export const getAllCATEvaluationAvailable = async (evaluationConsolidationAndTransferId) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/getAllEvaluationAvailable/${evaluationConsolidationAndTransferId}`
+  );
+};
+
+export const getAllCATEvaluationsByConsolidationId = async (evaluationConsolidationAndTransferId) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/getAllEvaluationsByConsolidationId/${evaluationConsolidationAndTransferId}`
+  );
+};
+
 export const getAllEvaluationExplaintCustom = async (values) => {
   return await apiInstance.put(`${BACKEND_API}/api/v1/evaluationExplaint/getAllCustom`, {
     evaluationId: values.evaluationId,
     categoryCriteriaId: values.categoryCriteriaId,
     userIds: values.userIds
   });
+};
+
+export const getAllEvaluationConsolidationAndTransfer = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/getAll`);
 };
 
 export const insertListUnit = async (values) => {
@@ -123,6 +139,10 @@ export const insertEvaluation = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluation/insert`, values);
 };
 
+export const insertEvaluationConsolidationAndTransfer = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/insert`, values);
+};
+
 export const insertAndRemoveListEvaluationCriteria = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteria/insertAndRemoveList`, {
     evaluationIds: values.evaluationIds,
@@ -143,6 +163,13 @@ export const insertSupervisorIntoEvaluation = async (values) => {
     userId: values.userId,
     sort: values.sort,
     isManager: values.isManager
+  });
+};
+
+export const insertEvaluationIntoCATD = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/insertEvaluationIntoCATD`, {
+    evaluationConsolidationAndTransferId: values.evaluationConsolidationAndTransferId,
+    evaluationIds: values.evaluationIds
   });
 };
 
@@ -346,6 +373,10 @@ export const removeCategoryProsCons = async (ids) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/categoryProsCons/removeRange`, ids);
 };
 
+export const removeEvaluationConsolidationAndTransfer = async (ids) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/removeRange`, ids);
+};
+
 export const removeCategoryComment = async (ids) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/categoryComment/removeRange`, ids);
 };
@@ -369,6 +400,13 @@ export const removeSupervisorFromEvaluation = async (values) => {
   });
 };
 
+export const removeEvaluationFromCATD = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/removeEvaluationFromCATD`, {
+    evaluationConsolidationAndTransferId: values.evaluationConsolidationAndTransferId,
+    evaluationIds: values.evaluationIds
+  });
+};
+
 export const downloadSignature = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/user/downloadSignature?id=${id}`, {
     responseType: "blob"
@@ -377,6 +415,10 @@ export const downloadSignature = async (id) => {
 
 export const checkIsManager = async (evaluationId) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationUser/checkIsManager/${evaluationId}`);
+};
+
+export const checkIsManagementMember = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/user/checkIsManagementMember`);
 };
 
 export const exportEvaluationDocument = async (evaluationId, templateType, outputFormat) => {
@@ -398,4 +440,46 @@ export const exportExcelOfUser = async (evaluationId) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/analyst/exportExcelOfUser?evaluationId=${evaluationId}`, {
     responseType: "blob"
   });
+};
+
+export const exportWordSampleCAT = async (evaluationConsolidationAndTransferId) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/exportWordAnalystSample?evaluationConsolidationAndTransferId=${evaluationConsolidationAndTransferId}`,
+    {
+      responseType: "blob"
+    }
+  );
+};
+
+export const confirmConsolidationAndTransferEvaluations = async (values) => {
+  const formData = new FormData();
+
+  formData.append("evaluationConsolidationAndTransferId", values.evaluationConsolidationAndTransferId);
+
+  if (values.fileWord) {
+    formData.append("files", values.fileWord);
+  }
+
+  if (values.fileES) {
+    formData.append("files", values.fileES);
+  }
+
+  return await apiInstance.post(
+    `${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/confirmConsolidationAndTransferEvaluations`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+export const exportAnalystConsolidationAndTransfer = async (evaluationConsolidationAndTransferId, numberTemplate) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/exportAnalystConsolidationAndTransfer?evaluationConsolidationAndTransferId=${evaluationConsolidationAndTransferId}&numberTemplate=${numberTemplate}`,
+    {
+      responseType: "blob"
+    }
+  );
 };

@@ -132,3 +132,11 @@ export const IconAccountSupervisorOutline = (props) => {
     </svg>
   );
 };
+
+export const IconBxTransfer = (props) => {
+  return (
+    <svg key={0} viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M15 12l5-4-5-4v2.999H2v2h13zm7 3H9v-3l-5 4 5 4v-3h13z" />
+    </svg>
+  );
+};

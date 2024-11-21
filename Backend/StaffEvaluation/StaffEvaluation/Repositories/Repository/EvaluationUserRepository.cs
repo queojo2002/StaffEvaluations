@@ -208,6 +208,13 @@ public class EvaluationUserRepository : IEvaluationUserRepository
 
         try
         {
+            var checkE = await _context.Evaluations.Where(e => e.Status != 0 && e.Id == model.EvaluationId).FirstOrDefaultAsync();
+
+            if (checkE != null)
+            {
+                return new ApiResult().Failure<EvaluationUserModel>("Phiếu đánh giá này đã được tổng hợp và chuyển nên không thể thao tác được nữa.");
+            }
+
             foreach (var userId in model.UserIds)
             {
                 EvaluationUser eu = new EvaluationUser
@@ -255,6 +262,13 @@ public class EvaluationUserRepository : IEvaluationUserRepository
 
         try
         {
+            var checkE = await _context.Evaluations.Where(e => e.Status != 0 && e.Id == model.EvaluationId).FirstOrDefaultAsync();
+
+            if (checkE != null)
+            {
+                return new ApiResult().Failure<EvaluationUserModel>("Phiếu đánh giá này đã được tổng hợp và chuyển nên không thể thao tác được nữa.");
+            }
+
             var evaluationUserToDelete = await _context.EvaluationUsers
                 .Where(c => model.UserIds.Contains(c.UserId) && c.EvaluationId == model.EvaluationId && c.Type == 1)
                 .ToListAsync();
@@ -313,6 +327,15 @@ public class EvaluationUserRepository : IEvaluationUserRepository
             return new ApiResult().Failure<EvaluationUserModel>("Phiếu này đã có dữ liệu đánh giá nên không thể chỉnh sửa giám sát viên được nữa!");
         }
 
+
+        var checkE = await _context.Evaluations.Where(e => e.Status != 0 && e.Id == model.EvaluationId).FirstOrDefaultAsync();
+
+        if (checkE != null)
+        {
+            return new ApiResult().Failure<EvaluationUserModel>("Phiếu đánh giá này đã được tổng hợp và chuyển nên không thể thao tác được nữa.");
+        }
+
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -356,6 +379,14 @@ public class EvaluationUserRepository : IEvaluationUserRepository
         {
             return new ApiResult().Failure<EvaluationUserModel>("Phiếu này đã có dữ liệu đánh giá nên không thể chỉnh sửa giám sát viên được nữa!");
         }
+
+        var checkE = await _context.Evaluations.Where(e => e.Status != 0 && e.Id == model.EvaluationId).FirstOrDefaultAsync();
+
+        if (checkE != null)
+        {
+            return new ApiResult().Failure<EvaluationUserModel>("Phiếu đánh giá này đã được tổng hợp và chuyển nên không thể thao tác được nữa.");
+        }
+
 
         using var transaction = await _context.Database.BeginTransactionAsync();
 

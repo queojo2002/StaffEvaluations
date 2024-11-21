@@ -10,6 +10,7 @@ import SelfEvaluationResults from "./EvaluationDetailsUserComponents/SelfEvaluat
 import SelfReviewAndQualityRating from "./EvaluationDetailsUserComponents/SelfReviewAndQualityRating";
 
 import {
+  checkIsManagementMember,
   getAllCategoryComment,
   getAllCategoryProsCons,
   getListCriteriaInEvaluationsOfUser,
@@ -54,10 +55,11 @@ const EvaluationDetailsUser = (props) => {
   const fetchApiGetAll = async (evaluationId) => {
     setLoading(true);
     try {
-      const [data1, data2, data3] = await Promise.all([
+      const [data1, data2, data3, data4] = await Promise.all([
         getListCriteriaInEvaluationsOfUser(evaluationId),
         getAllCategoryProsCons(),
-        getAllCategoryComment()
+        getAllCategoryComment(),
+        checkIsManagementMember()
       ]);
       setData(data1.data.criteriaList);
       if (data1.data.supervisorList !== null) {
@@ -66,6 +68,9 @@ const EvaluationDetailsUser = (props) => {
       }
       setDataProsCons(data2.dataList);
       setBindingAddReview(getReview(data3.dataList));
+      if (data4.data !== null) {
+        setIsPrincipal(true);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       openNotificationTopLeft("error", "Thông báo lỗi!", error);

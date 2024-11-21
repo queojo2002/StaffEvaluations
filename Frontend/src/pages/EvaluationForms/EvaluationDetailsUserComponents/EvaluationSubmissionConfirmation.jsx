@@ -7,6 +7,7 @@ const EvaluationSubmissionConfirmation = (props) => {
     <Row gutter={16}>
       <Col span={24}>
         <Dragger
+          accept=".pem"
           multiple={false}
           maxCount={1}
           beforeUpload={(file) => {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StaffEvaluation.Data;
 using StaffEvaluation.Helpers;
 using StaffEvaluation.Models;
@@ -122,7 +123,16 @@ public class UserController : Controller
 
 
 
+    [HttpGet("checkIsManagementMember")]
+    [Authorize]
+    public async Task<IActionResult> CheckIsManagementMember()
+    {
+        var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
 
+        var check = await _context.Users!.Where(e => e.Id == userId && e.PositionsName!.ToUpper() == "VCQL").FirstOrDefaultAsync();
+
+        return Ok(new Pagination().HandleGetByIdRespond(check));
+    }
 
 }
 

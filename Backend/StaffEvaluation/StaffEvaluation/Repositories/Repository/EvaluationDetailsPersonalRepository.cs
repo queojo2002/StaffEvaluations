@@ -96,6 +96,8 @@ public class EvaluationDetailsPersonalRepository : IEvaluationDetailsPersonalRep
             {
                 var eu = await _context.EvaluationUsers.Where(e => e.UserId == userCurrentId && e.EvaluationId == model.EvaluationId && e.Type == 2).FirstOrDefaultAsync();
 
+                var userCheckIsManager = await _context.Users!.Where(e => e.Id == userCurrentId && e.PositionsName!.ToUpper() == "VCQL").FirstOrDefaultAsync();
+
                 EvaluationAAE evaluationsAAE = new EvaluationAAE()
                 {
                     Id = Guid.NewGuid(),
@@ -109,7 +111,7 @@ public class EvaluationDetailsPersonalRepository : IEvaluationDetailsPersonalRep
                     UpdatedAt = DateTime.Now
                 };
 
-                if (eu != null && eu.IsManager == true)
+                if ((eu != null && eu.IsManager == true) || (userCheckIsManager != null))
                 {
                     evaluationsAAE.KetQuaHoatDongCoQuan = model.EvaluationDetails?.KetQuaHoatDongCoQuan;
                     evaluationsAAE.NangLucLanhDaoQuanLy = model.EvaluationDetails?.NangLucLanhDaoQuanLy;
