@@ -29,7 +29,9 @@ public class UserController : Controller
     [Authorize]
     public async Task<IActionResult> GetAll()
     {
-        var get = await _userRepository.GetAllPagedAsync(0, 0);
+        Guid unitCurrentId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _userRepository.GetAllOfUnit(unitCurrentId);
 
         return Ok(get);
     }
@@ -132,6 +134,25 @@ public class UserController : Controller
         var check = await _context.Users!.Where(e => e.Id == userId && e.PositionsName!.ToUpper() == "VCQL").FirstOrDefaultAsync();
 
         return Ok(new Pagination().HandleGetByIdRespond(check));
+    }
+
+    [HttpGet("activate")]
+    public async Task<IActionResult> Activate(string code)
+    {
+        var user = await _context.Users!.FirstOrDefaultAsync(u => u.ActivationCode == code && !u.IsActive && !u.IsDeleted);
+
+        if (user == null)
+        {
+            return BadRequest("Mã kích hoạt không hợp lệ hoặc tài khoản đã được kích hoạt.");
+        }
+
+        user.IsActive = true;
+        user.ActivationCode = null; // Xóa mã kích hoạt sau khi kích hoạt
+        user.UpdatedAt = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        return Ok("Tài khoản của bạn đã được kích hoạt thành công.");
     }
 
 }

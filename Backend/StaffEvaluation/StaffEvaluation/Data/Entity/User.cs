@@ -27,6 +27,7 @@ public class User
     public string? PositionsName { get; set; }
     [Required]
     public bool IsActive { get; set; } = true;
+    public string? ActivationCode { get; set; }
     [Required]
     public bool IsDeleted { get; set; } = false;
     [Required]

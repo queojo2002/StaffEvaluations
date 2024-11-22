@@ -7,7 +7,7 @@ import { IoFilterSharp } from "react-icons/io5";
 import { MdFingerprint } from "react-icons/md";
 import { RiDeleteBin2Fill } from "react-icons/ri";
 import { ExclamationCircleFilled, LoadingOutlined } from "@ant-design/icons";
-import { Button, Card, Divider, Flex, Input, Modal, Spin, Table, Tooltip, Typography } from "antd";
+import { Button, Card, Divider, Flex, Input, Modal, Spin, Table, Tag, Tooltip, Typography } from "antd";
 
 import NewAndUpdateUser from "./NewAndUpdateUser";
 
@@ -167,6 +167,15 @@ const Users = () => {
       title: "Địa chỉ",
       dataIndex: "address",
       render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "isActive",
+      render: (isActive) => (
+        <div style={{ whiteSpace: "break-spaces", width: "100%" }}>
+          {isActive === true ? <Tag color="green">Đã kích hoạt</Tag> : <Tag color="#f50">Chưa kích hoạt</Tag>}
+        </div>
+      )
     },
     {
       title: "Hành động",

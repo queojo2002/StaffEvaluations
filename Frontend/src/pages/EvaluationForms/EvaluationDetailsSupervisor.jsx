@@ -864,8 +864,8 @@ const EvaluationDetailsSupervisor = (props) => {
             }}
           >
             <Button
+              hidden={status === 2 ? true : false}
               loading={loading}
-              // onClick={showModalxx}
               icon={<SaveOutlined />}
               style={{ fontSize: 14, width: 130, height: 40, color: "white", backgroundColor: "#1890ff" }}
             >

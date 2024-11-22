@@ -91,7 +91,7 @@ public class UnitRepository : IUnitRepository
 	                    *
                     From 
 	                    Unit u
-                    Where u.Id In (SELECT recursiveCTE.Id FROM recursiveCTE) ;";
+                    Where u.Id In (SELECT recursiveCTE.Id FROM recursiveCTE) AND u.IsDeleted = 0 ;";
 
         var result = await _context.Units!.FromSqlRaw(sqlQuery, unitId).ToListAsync();
 

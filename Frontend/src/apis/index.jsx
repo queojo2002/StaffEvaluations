@@ -93,6 +93,10 @@ export const getAllEvaluationConsolidationAndTransfer = async () => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/getAll`);
 };
 
+export const getAllEvaluationConsolidationAndTransferCompleted = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationConsolidationAndTransfer/getAllWithCompleted`);
+};
+
 export const insertListUnit = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/unit/insertListUnit`, {
     unitName: values.unitName,
@@ -481,5 +485,15 @@ export const exportAnalystConsolidationAndTransfer = async (evaluationConsolidat
     {
       responseType: "blob"
     }
+  );
+};
+
+export const getAnalyst = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/dashBoard/getAnalyst`);
+};
+
+export const sendMailAPI = async (userId, evaluationId) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluation/sendMail?userId=${userId}&evaluationId=${evaluationId}`
   );
 };

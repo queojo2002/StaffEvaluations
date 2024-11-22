@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BsSendArrowDown } from "react-icons/bs";
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import { Alert, Button, Col, Row, Space, Spin, Table } from "antd";
 
@@ -6,11 +7,14 @@ import {
   getUsersAllowedToEvaluate,
   getUsersNotAllowedToEvaluate,
   insertUserIntoEvaluation,
-  removeUserFromEvaluation
+  removeUserFromEvaluation,
+  sendMailAPI
 } from "~/apis";
+import { openNotificationTopLeft } from "~/utils/openNotification";
 const AddUserToEvaluation = (props) => {
   const { id } = props;
 
+  const [loadingButtonSendMail, setLoadingButtonSendMail] = useState(false);
   const [selectedRowKeysAdd, setSelectedRowKeysAdd] = useState([]);
   const [selectedRowKeysRemove, setSelectedRowKeysRemove] = useState([]);
   const [dataOne, setDataOne] = useState([]);
@@ -75,6 +79,18 @@ const AddUserToEvaluation = (props) => {
     setLoading(false);
   };
 
+  const sendMail = async (userId, evaluationId) => {
+    setLoadingButtonSendMail(true);
+
+    const sendRes = await sendMailAPI(userId, evaluationId);
+
+    if (sendRes.isSuccess) {
+      openNotificationTopLeft("success", "Thông báo!", "Gửi email nhắc nhở thành công");
+    }
+
+    setLoadingButtonSendMail(false);
+  };
+
   const columns = [
     {
       title: "Họ và tên",
@@ -109,6 +125,58 @@ const AddUserToEvaluation = (props) => {
     }
   ];
 
+  const columnsTwo = [
+    {
+      title: "Họ và tên",
+      dataIndex: "fullName",
+      render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
+    },
+    {
+      title: "Đơn vị",
+      dataIndex: "unitName",
+      render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
+    },
+    {
+      title: "Loại người dùng",
+      dataIndex: "userTypeName",
+      render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
+    },
+    {
+      title: "Chức danh",
+      dataIndex: "positionsName",
+      render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      width: 130,
+      render: (text) => <div style={{ whiteSpace: "break-spaces", width: "100%" }}>{text}</div>
+    },
+    {
+      title: "Trạng thái đánh giá",
+      dataIndex: "status",
+      width: 130,
+      render: (status, record) => (
+        <Button
+          onClick={() => {
+            sendMail(record.id, id);
+          }}
+          disabled={!!status}
+          type="primary"
+          icon={<BsSendArrowDown />}
+          loading={loadingButtonSendMail}
+        >
+          Nhắc nhở
+        </Button>
+      )
+    }
+  ];
+
   const propsTableAdd = {
     scroll: {
       x: 800
@@ -133,7 +201,7 @@ const AddUserToEvaluation = (props) => {
     },
     rowKey: "id",
     rowSelection: rowSelectionRemove,
-    columns: columns.map((item) => ({
+    columns: columnsTwo.map((item) => ({
       width: 130,
       align: "center",
       ...item
@@ -197,13 +265,27 @@ const AddUserToEvaluation = (props) => {
             >
               Xoá {selectedRowKeysRemove.length} người dùng khỏi phiếu
             </Button>
+            {/* <Button
+              onClick={() => {
+                onFinish(0);
+              }}
+              type="primary"
+              icon={<BsSendArrowDown />}
+            >
+              Gửi email nhắc nhở cho toàn bộ người dùng
+            </Button> */}
           </Space>
         </Col>
         <Col span={24}>
           <Table
             title={() => (
               <Alert
-                message="Danh sách người dùng được phép đánh giá"
+                message={
+                  <span>
+                    Tổng số lượng người dùng tham gia Phiếu đánh giá này là:{" "}
+                    <strong style={{ color: "#1890ff", fontSize: "14px" }}>{dataTwo.length}</strong>
+                  </span>
+                }
                 type="success"
                 showIcon
                 style={{ marginBottom: 16 }}

@@ -4,8 +4,18 @@ import { CgProfile } from "react-icons/cg";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { animateScroll as scroll } from "react-scroll";
-import { FacebookFilled, SearchOutlined, StarOutlined, TwitterOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Col, Drawer, Dropdown, Input, Row, Spin, Switch, Typography } from "antd";
+import {
+  BellOutlined,
+  ClockCircleOutlined,
+  FacebookFilled,
+  ReloadOutlined,
+  RightCircleOutlined,
+  SearchOutlined,
+  StarOutlined,
+  TwitterOutlined,
+  UserOutlined
+} from "@ant-design/icons";
+import { Avatar, Badge, Button, Col, Drawer, Dropdown, Input, List, Row, Space, Spin, Switch, Typography } from "antd";
 import styled from "styled-components";
 
 import { logout, setUserInfo } from "../../redux/authSlice.js";
@@ -84,6 +94,29 @@ const HeaderCustom = ({
   const [sidenavType, setSidenavType] = useState("transparent");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(false);
+  const [dataNotification, setDataNotification] = useState([
+    {
+      title: "Phiếu đánh giá sắp đến hạn đánh giá",
+      content: "Không có phiếu nào",
+      icon: <RightCircleOutlined />,
+      link: "/admin/TU_DANH_GIA_TOAN_BO",
+      color: "#8d8f06"
+    },
+    {
+      title: "Phiếu đánh giá hiện tại đang trong thời gian mở",
+      content: "Không có phiếu nào",
+      icon: <ClockCircleOutlined />,
+      link: "/admin/TU_DANH_GIA_TOAN_BO",
+      color: "red"
+    },
+    {
+      title: "Phiếu đánh giá đang chờ xem xét",
+      content: "Không có phiếu nào",
+      icon: <ReloadOutlined />,
+      link: "/admin/DANH_SACH_CHO_DANH_GIA",
+      color: "blue"
+    }
+  ]);
 
   useEffect(() => scroll.scrollToTop({ duration: 500 }));
 
@@ -101,6 +134,54 @@ const HeaderCustom = ({
       navigate("/", { replace: true });
     }, 2000);
   };
+
+  const notificationMenu = (
+    <List
+      itemLayout="horizontal"
+      dataSource={dataNotification}
+      style={{
+        width: 500,
+        borderRadius: "8px",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        backgroundColor: "#fff"
+      }}
+      renderItem={(item, index) => (
+        <List.Item
+          style={{
+            marginTop: 10,
+            padding: "16px 24px",
+            borderBottom: "1px solid #f0f0f0",
+            transition: "background 0.3s",
+            cursor: "pointer"
+          }}
+          // onClick={() => handleNavigationNotification(item.link)}
+        >
+          <List.Item.Meta
+            avatar={
+              <Avatar
+                icon={item.icon}
+                style={{
+                  backgroundColor: item.color
+                }}
+              />
+            }
+            title={
+              <Typography
+                // onClick={() => handleNavigationNotification(item.link)}
+                style={{
+                  transition: "color 0.3s, font-weight 0.3s"
+                }}
+                className="notification-title"
+              >
+                {item.title}
+              </Typography>
+            }
+            description={item.content}
+          />
+        </List.Item>
+      )}
+    />
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -280,7 +361,36 @@ const HeaderCustom = ({
               </a>
             </Dropdown>
           </Spin>
+
           <Input className="header-search" placeholder="Type here..." prefix={<SearchOutlined />} />
+
+          <Spin spinning={false}>
+            <Space style={{ marginRight: 20 }}>
+              <Dropdown
+                overlay={notificationMenu}
+                trigger={["click"]}
+                // onVisibleChange={handleVisibleChange}
+                // visible={visible}
+                placement="bottomCenter" // Hiển thị danh sách ở giữa
+              >
+                <Badge count={3} offset={[2, 0]}>
+                  {" "}
+                  <div
+                    style={{
+                      transform: "scale(1.5)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer" // Hiển thị con trỏ dạng click khi hover
+                    }}
+                  >
+                    <BellOutlined style={{ fontSize: "24px" }} />
+                  </div>
+                </Badge>
+              </Dropdown>
+            </Space>
+          </Spin>
+
           <Button type="link" className="sidebar-toggler" onClick={() => onPress()}>
             {toggler}
           </Button>

@@ -20,6 +20,7 @@ import {
   IconUserShield
 } from "./svg";
 
+import Dashboard from "~/pages/Dashboard/Dashboard";
 import Evaluation from "~/pages/Evaluation/Evaluation";
 import EvaluationsComments from "~/pages/EvaluationComments/EvaluationsComments";
 import EvaluationCriteria from "~/pages/EvaluationCriteria/EvaluationCriteria";
@@ -29,6 +30,7 @@ import EvaluationPeriods from "~/pages/EvaluationPeriods/EvaluationPeriods";
 import EvaluationProsCons from "~/pages/EvaluationProsCons/EvaluationProsCons";
 import EvaluationRatings from "~/pages/EvaluationRatings/EvaluationRatings";
 import EvaluationConsolidationAndTransfer from "~/pages/Statistics/EvaluationConsolidationAndTransfer";
+import EvaluationStatistics from "~/pages/Statistics/EvaluationStatistics";
 import Users from "~/pages/Users/Users";
 import UserType from "~/pages/UserType/UserType";
 
@@ -52,7 +54,7 @@ export const iconMapping = {
 };
 
 export const componentsMapping = {
-  dashboard: <Users />,
+  dashboard: <Dashboard />,
   evaluations: <Evaluation />,
   users: <Users />,
   units: <Units />,
@@ -62,7 +64,7 @@ export const componentsMapping = {
   "evaluation-pros-cons": <EvaluationProsCons />,
   "evaluation-comments": <EvaluationsComments />,
   "evaluation-periods": <EvaluationPeriods />,
-  "evaluation-statistics": <Users />,
+  "evaluation-statistics": <EvaluationStatistics />,
   "self-evaluation": <SelfEvaluation />,
   "supervisor-evaluation": <SupervisorEvaluation />,
   roles: <Roles />,

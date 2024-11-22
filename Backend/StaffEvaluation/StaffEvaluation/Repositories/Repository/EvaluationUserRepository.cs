@@ -71,7 +71,7 @@ public class EvaluationUserRepository : IEvaluationUserRepository
                 IsActive = user.IsActive,
                 IsDeleted = user.IsDeleted,
                 UpdatedAt = user.UpdatedAt,
-            }).OrderByDescending(e => e.UpdatedAt).ToListAsync();
+            }).OrderBy(e => e.FullName).ToListAsync();
 
         return new Pagination().HandleGetAllRespond(0, 0, datas, datas.Count);
     }
@@ -140,10 +140,22 @@ public class EvaluationUserRepository : IEvaluationUserRepository
                 Address = user.Address,
                 Birthday = user.Birthday,
                 PositionsName = user.PositionsName,
+                Status = false,
                 IsActive = user.IsActive,
                 IsDeleted = user.IsDeleted,
                 UpdatedAt = user.UpdatedAt,
-            }).OrderByDescending(e => e.UpdatedAt).ToListAsync();
+            }).OrderBy(e => e.FullName).ToListAsync();
+
+
+        foreach (var item in datas)
+        {
+            var checkEdp = await _context.EvaluationDetailsPersonals.Where(e => e.UserId == item.Id && e.EvaluationId == evaluationId && e.Status >= 2).FirstOrDefaultAsync();
+
+            if (checkEdp == null) continue;
+
+            item.Status = true;
+        }
+
 
         return new Pagination().HandleGetAllRespond(0, 0, datas, datas.Count);
     }
@@ -186,7 +198,7 @@ public class EvaluationUserRepository : IEvaluationUserRepository
                 IsActive = user.IsActive,
                 IsDeleted = user.IsDeleted,
                 UpdatedAt = user.UpdatedAt,
-            }).OrderByDescending(e => e.UpdatedAt).ToListAsync();
+            }).OrderBy(e => e.FullName).ToListAsync();
 
         return new Pagination().HandleGetAllRespond(0, 0, datas, datas.Count);
     }

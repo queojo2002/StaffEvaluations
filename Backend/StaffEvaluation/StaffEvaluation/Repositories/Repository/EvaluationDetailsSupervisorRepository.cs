@@ -45,6 +45,13 @@ public class EvaluationDetailsSupervisorRepository : IEvaluationDetailsSuperviso
             return new ApiResult().Failure<EvaluationDetailsSupervisorModel>("Người dùng không hợp lệ.");
         }
 
+        var check = await _context.Evaluations.Where(e => e.Id == model.EvaluationId && e.Status != 0).FirstOrDefaultAsync();
+
+        if (check != null)
+        {
+            return new ApiResult().Failure<EvaluationDetailsSupervisorModel>("Phiếu đánh giá này đã được Tổng hợp nên không thể thao tác được nữa.");
+        }
+
 
         using var transaction = await _context.Database.BeginTransactionAsync();
 

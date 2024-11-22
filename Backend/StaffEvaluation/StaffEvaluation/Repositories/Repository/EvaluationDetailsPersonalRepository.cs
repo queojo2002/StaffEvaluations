@@ -38,6 +38,14 @@ public class EvaluationDetailsPersonalRepository : IEvaluationDetailsPersonalRep
             return new ApiResult().Failure<EvaluationDetailsPersonalModel>("Danh sách đánh giá không tồn tại.");
         }
 
+        var check = await _context.Evaluations.Where(e => e.Id == model.EvaluationId && e.Status != 0).FirstOrDefaultAsync();
+
+        if (check != null)
+        {
+            return new ApiResult().Failure<EvaluationDetailsPersonalModel>("Phiếu đánh giá này đã được Tổng hợp nên không thể thao tác được nữa.");
+        }
+
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try

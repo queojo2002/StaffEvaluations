@@ -67,6 +67,23 @@ public class EvaluationConsolidationAndTransferController : Controller
     }
 
 
+    [HttpGet("getAllWithCompleted")]
+    [Authorize]
+    public async Task<IActionResult> GetAllWithCompleted()
+    {
+        var unitId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _evaluationConsolidationAndTransferRepository.GetAllOfUnit(unitId);
+
+        if (get.DataList != null)
+        {
+            get.DataList = get.DataList.Where(e => e.Status != 0).ToArray();
+        }
+
+        return Ok(get);
+    }
+
+
     [HttpGet("getAllEvaluationAvailable/{evaluationConsolidationAndTransferId}")]
     [Authorize]
     public async Task<IActionResult> GetAllEvaluationAvailable(Guid evaluationConsolidationAndTransferId)
@@ -314,7 +331,7 @@ public class EvaluationConsolidationAndTransferController : Controller
 
                         namedWorksheet.Cells[rowStart, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
 
-                        namedWorksheet.Cells[rowStart, 2].Value = user.FullName!.ToString();
+                        namedWorksheet.Cells[rowStart, 2].Value = getUser.FullName!.ToString();
 
                         namedWorksheet.Cells[rowStart, 2].Style.Border.BorderAround(ExcelBorderStyle.Thin);
 
@@ -363,6 +380,8 @@ public class EvaluationConsolidationAndTransferController : Controller
 
                     evaluation.Status = 1;
 
+                    evaluation.UpdatedAt = DateTime.Now;
+
                     await _context.SaveChangesAsync();
                 }
 
@@ -373,6 +392,8 @@ public class EvaluationConsolidationAndTransferController : Controller
 
 
             evaluationsCat.Status = 1;
+
+            evaluationsCat.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
 

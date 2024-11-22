@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using MailKit.Net.Smtp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MimeKit;
 using StaffEvaluation.Data;
 using StaffEvaluation.Data.Entity;
 using StaffEvaluation.Helpers;
@@ -15,15 +17,17 @@ namespace StaffEvaluation.Repositories.Repository;
 
 public class UserRepository : IUserRepository
 {
+    private readonly IUnitRepository _unitRepository;
     private readonly IConfiguration _configuration;
     private DataContext _context;
     private IMapper _mapper;
 
-    public UserRepository(DataContext context, IMapper mapper, IConfiguration configuration)
+    public UserRepository(DataContext context, IMapper mapper, IConfiguration configuration, IUnitRepository unitRepository)
     {
         _context = context;
         _mapper = mapper;
         _configuration = configuration;
+        _unitRepository = unitRepository;
     }
 
     public async Task<PagedApiResponse<UserModel>> GetAllPagedAsync(int pageNumber, int pageSize)
@@ -95,15 +99,17 @@ public class UserRepository : IUserRepository
         return new Pagination().HandleGetByIdRespond(mappedUser);
     }
 
-
-
     public async Task<PagedApiResponse<TokenModel>> Login(string email, string password)
     {
-        var user = await _context.Users!.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+        var user = await _context.Users!.FirstOrDefaultAsync(u => u.Email == email && u.Password == password && !u.IsDeleted);
 
         if (user == null)
         {
             return new ApiResult().Failure<TokenModel>("Đăng nhập thất bại!");
+        }
+        else if (!user.IsActive)
+        {
+            return new ApiResult().Failure<TokenModel>("Vui lòng xác nhận email để có thể đăng nhập vào hệ thống!");
         }
 
         var refreshTokens = await _context.RefreshTokens!
@@ -260,7 +266,44 @@ public class UserRepository : IUserRepository
 
     }
 
+    public async Task<PagedApiResponse<UserModel>> GetAllOfUnit(Guid unitCurrentId)
+    {
+        var units = await _unitRepository.GetAllChildOfUnitAsync(unitCurrentId);
 
+        List<Guid> unitIds = units.DataList!.Select(e => e.Id).ToList();
+
+        var userModels = await (
+                                    from user in _context.Users
+                                    join unit in _context.Units! on user.UnitId equals unit.Id
+                                    join ut in _context.UserTypes! on user.UserTypeId equals ut.Id
+                                    where !user.IsDeleted && unitIds.Contains(user.UnitId)
+                                    select new UserModel
+                                    {
+                                        Id = user.Id,
+                                        UserTypeId = user.UserTypeId,
+                                        UserTypeName = ut.UserTypeName,
+                                        UnitName = unit.UnitName,
+                                        UnitId = user.UnitId,
+                                        FullName = user.FullName,
+                                        Email = user.Email,
+                                        Password = user.Password,
+                                        Phone = user.Phone,
+                                        Address = user.Address,
+                                        Birthday = user.Birthday,
+                                        PositionsName = user.PositionsName,
+                                        IsActive = user.IsActive,
+                                        IsDeleted = user.IsDeleted,
+                                        UpdatedAt = user.UpdatedAt
+                                    }
+                                ).OrderBy(e => e.FullName).ToListAsync();
+
+        return new Pagination().HandleGetAllRespond(
+            0,
+            0,
+            userModels,
+            userModels.Count
+        );
+    }
 
 
     private string GenerateRefreshToken()
@@ -335,6 +378,8 @@ public class UserRepository : IUserRepository
             }
 
             Guid userId = Guid.NewGuid();
+            string activationCode = Guid.NewGuid().ToString(); // Mã kích hoạt
+
 
             User user = new User
             {
@@ -348,7 +393,8 @@ public class UserRepository : IUserRepository
                 Address = entity.Address,
                 Birthday = entity.Birthday,
                 PositionsName = entity.PositionsName,
-                IsActive = true,
+                ActivationCode = activationCode,
+                IsActive = false,
                 IsDeleted = false,
                 UpdatedAt = DateTime.Now
             };
@@ -383,6 +429,47 @@ public class UserRepository : IUserRepository
             await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
+
+            var email = new MimeMessage();
+
+            email.From.Add(new MailboxAddress("Hệ thống quản lý đánh giá cán bộ", "narutokun456789@gmail.com"));
+            email.To.Add(new MailboxAddress(user.FullName, user.Email));
+
+            email.Subject = "Xác thực tài khoản";
+
+            email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+            {
+                Text = $@"
+                    <div style=""font-family: Arial, sans-serif; max-width: 600px; width: 100%; margin: 0 auto; border: 1px solid #ddd; border-radius: 10px; padding: 20px; background-color: #f9f9f9;"">
+                        <h2 style=""color: #1890ff; text-align: center; margin-bottom: 30px;"">Kích hoạt tài khoản</h2>
+                        <p style=""font-size: 14px; color: #666; margin: 10px 0;"">
+                            Xin chào <strong style=""color: #ff4d4f;"">{entity.FullName}</strong>,
+                        </p>
+                        <p style=""font-size: 14px; color: #666; margin: 10px 0;"">
+                            Cảm ơn bạn đã đăng ký tài khoản tại hệ thống của chúng tôi. Để hoàn tất việc đăng ký, vui lòng nhấn vào nút bên dưới để kích hoạt tài khoản của bạn.
+                        </p>
+                        <div style=""text-align: center; margin: 20px 0;"">
+                            <a href=""https://localhost:7112/api/v1/user/activate?code={activationCode}"" style=""display: inline-block; padding: 12px 24px; background-color: #1890ff; color: #fff; text-decoration: none; font-size: 16px; border-radius: 5px;"">Kích hoạt ngay</a>
+                        </div>
+                        <p style=""font-size: 14px; color: #666; margin: 10px 0;"">
+                            Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email này hoặc gọi hotline: <strong>0326.393.540</strong>.
+                        </p>
+                        <p style=""text-align: center; font-size: 12px; color: #999; margin-top: 30px;"">
+                            Hệ Thống Quản Lý Đánh Giá Cán Bộ - Công ty ABC<br>
+                            Hotline: 0326.393.540 | Email: narutokun456789@gmail.com
+                        </p>
+                    </div>"
+            };
+
+            using (var smtp = new SmtpClient())
+            {
+                smtp.Connect("smtp.gmail.com", 587, false);
+
+                smtp.Authenticate("narutokun456789@gmail.com", "qgih isdd zbwc osku");
+
+                smtp.Send(email);
+                smtp.Disconnect(true);
+            }
 
             return new ApiResult().Success<UserModel>("Thêm mới người dùng thành công");
         }
@@ -516,6 +603,7 @@ public class UserRepository : IUserRepository
             return false;
         }
     }
+
 
 }
 
