@@ -15,7 +15,6 @@ namespace StaffEvaluation.Repositories.Repository;
 public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
 {
     private DataContext _context;
-
     private IMapper _mapper;
 
     public EvaluationCriteriaRepository(DataContext context, IMapper mapper)
@@ -624,8 +623,6 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
 
         return response;
     }
-
-
 
     private void AssignSTT(CriteriaOfUserModel model, string parentSTT)
     {

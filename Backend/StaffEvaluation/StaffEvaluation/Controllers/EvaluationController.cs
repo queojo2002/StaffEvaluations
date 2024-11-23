@@ -179,9 +179,11 @@ public class EvaluationController : Controller
         }
         catch (Exception ex)
         {
-            return BadRequest(new ApiResult().Failure<EvaluationModel>($"Có lỗi khi gửi email nhắc nhở."));
+            return BadRequest(new ApiResult().Failure<EvaluationModel>($"Có lỗi khi gửi email nhắc nhở." + ex.Message));
         }
     }
+
+
 
 }
 

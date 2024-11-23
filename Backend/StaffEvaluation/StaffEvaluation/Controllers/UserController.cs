@@ -94,7 +94,7 @@ public class UserController : Controller
 
     [HttpGet("downloadSignature")]
     [Authorize]
-    public async Task<IActionResult> DownloadSignature(Guid id)
+    public IActionResult DownloadSignature(Guid id)
     {
         try
         {

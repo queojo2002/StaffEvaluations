@@ -24,7 +24,9 @@ public class CategoryTimeTypeController : Controller
     [Authorize]
     public async Task<IActionResult> GetAll()
     {
-        var get = await _categoryTimeTypeRepository.GetAllPagedAsync(0, 0);
+        var unitCurrentId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _categoryTimeTypeRepository.GetAllOfUnit(unitCurrentId);
 
         return Ok(get);
     }

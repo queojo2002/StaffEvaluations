@@ -17,7 +17,14 @@ import NewEvaluation from "./NewEvaluation";
 import SettingEvaluation from "./SettingEvaluation";
 import UpdateTimeTypeToEvaluation from "./UpdateTimeTypeToEvaluation";
 
-import { getAllCategoryCriteria, getAllCategoryTimeType, getAllEvaluation, getAllUnit, removeEvaluation } from "~/apis";
+import {
+  getAllCategoryCriteria,
+  getAllCategoryTimeType,
+  getAllEvaluation,
+  getAllEvaluationSample,
+  getAllUnit,
+  removeEvaluation
+} from "~/apis";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import arrayToTree from "~/utils/arrayToTree";
 import { openNotificationTopLeft } from "~/utils/openNotification";
@@ -32,6 +39,7 @@ const Evaluation = () => {
   const [dataUnit, setDataUnit] = useState([]);
   const [dataCategoryTimeType, setDataCategoryTimeType] = useState([]);
   const [dataCategoryCriteria, setDataCategoryCriteria] = useState([]);
+  const [dataEvaluationSample, setDataEvaluationSample] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
   const [isOpenModalEdit, setIsOpenModalEdit] = useState(false);
@@ -46,17 +54,19 @@ const Evaluation = () => {
   const fetchApiGetAll = async () => {
     setLoading(true);
     try {
-      const [data1, data2, data3, data4] = await Promise.all([
+      const [data1, data2, data3, data4, data5] = await Promise.all([
         getAllEvaluation(),
         getAllUnit(),
         getAllCategoryTimeType(),
-        getAllCategoryCriteria()
+        getAllCategoryCriteria(),
+        getAllEvaluationSample()
       ]);
 
       setDatas(data1.dataList);
       setDataUnit(data2.dataList);
       setDataCategoryTimeType(data3.dataList);
       setDataCategoryCriteria(data4.dataList);
+      setDataEvaluationSample(data5.dataList);
     } catch (error) {
       console.error("Error fetching data:", error);
       openNotificationTopLeft("error", "Thông báo lỗi!", error);
@@ -239,7 +249,12 @@ const Evaluation = () => {
         style={{ top: 20 }}
         width={800}
       >
-        <NewEvaluation listUnit={arrayToTree(dataUnit)} refetchApi={fetchApiGetAll} closeModal={setIsOpenModalAdd} />
+        <NewEvaluation
+          evaluationSampleList={dataEvaluationSample}
+          listUnit={arrayToTree(dataUnit)}
+          refetchApi={fetchApiGetAll}
+          closeModal={setIsOpenModalAdd}
+        />
       </Modal>
 
       <Modal

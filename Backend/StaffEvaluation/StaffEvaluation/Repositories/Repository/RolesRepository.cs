@@ -249,7 +249,7 @@ public class RolesRepository : IRolesRepository
     {
         throw new NotImplementedException();
     }
-    public async Task<PagedApiResponse<RolesModel>> RemoveRangeAsync(List<Guid> ids)
+    public Task<PagedApiResponse<RolesModel>> RemoveRangeAsync(List<Guid> ids)
     {
         throw new NotImplementedException();
     }

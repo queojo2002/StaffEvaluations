@@ -12,11 +12,12 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
 {
     private readonly DataContext _context;
     private readonly IMapper _mapper;
-
-    public CategoryCriteriaRepository(DataContext context, IMapper mapper)
+    private readonly IUnitRepository _unitRepository;
+    public CategoryCriteriaRepository(DataContext context, IMapper mapper, IUnitRepository unitRepository)
     {
         _context = context;
         _mapper = mapper;
+        _unitRepository = unitRepository;
     }
 
     public async Task<PagedApiResponse<CategoryCriteriaModel>> GetAllPagedAsync(int pageNumber, int pageSize)
@@ -44,6 +45,37 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
 
 
         return new Pagination().HandleGetAllRespond(pageNumber, pageSize, criteria, criteria.Count);
+    }
+
+    public async Task<PagedApiResponse<CategoryCriteriaModel>> GetAllOfUnit(Guid unitCurrentId)
+    {
+        var units = await _unitRepository.GetAllChildOfUnitAsync(unitCurrentId);
+
+        List<Guid> unitIds = units.DataList!.Select(e => e.Id).ToList();
+
+        var criteria = await (from cc in _context.CategoryCriterias
+                              join u in _context.Units! on cc.UnitId equals u.Id
+                              join cr in _context.CategoryRatings on cc.CategoryRatingId equals cr.Id into crGroup
+                              from cr in crGroup.DefaultIfEmpty()
+                              where !u.IsDeleted && !cc.IsDeleted && unitIds.Contains(cc.UnitId)
+                              select new CategoryCriteriaModel
+                              {
+                                  Id = cc.Id,
+                                  ParentId = cc.ParentId,
+                                  CategoryRatingId = cr != null ? cr.Id : null,
+                                  StartValue = cr.StartValue,
+                                  EndValue = cr.EndValue,
+                                  RatingName = cr.RatingName ?? null,
+                                  UnitId = u.Id,
+                                  UnitName = u.UnitName,
+                                  CriteriaName = cc.CriteriaName,
+                                  IsDistinct = cc.IsDistinct,
+                                  IsDeleted = cc.IsDeleted,
+                                  UpdatedAt = cc.UpdatedAt,
+                              }).OrderBy(e => e.UnitName).ThenBy(e => e.CriteriaName).ToListAsync();
+
+
+        return new Pagination().HandleGetAllRespond(0, 0, criteria, criteria.Count);
     }
 
     public async Task<PagedApiResponse<CategoryCriteriaModel>> GetByIdAsync(Guid id)
@@ -110,7 +142,7 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
         {
             await transaction.RollbackAsync();
 
-            return new ApiResult().Failure<CategoryCriteriaModel>($"Lỗi khi thêm tiêu chí: {ex.InnerException.Message}");
+            return new ApiResult().Failure<CategoryCriteriaModel>($"Lỗi khi thêm tiêu chí: {ex.Message}");
         }
     }
 

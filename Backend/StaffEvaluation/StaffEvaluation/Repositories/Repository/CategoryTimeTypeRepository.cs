@@ -12,11 +12,13 @@ public class CategoryTimeTypeRepository : ICategoryTimeTypeRepository
 {
     private readonly DataContext _context;
     private readonly IMapper _mapper;
+    private readonly IUnitRepository _unitRepository;
 
-    public CategoryTimeTypeRepository(DataContext context, IMapper mapper)
+    public CategoryTimeTypeRepository(DataContext context, IMapper mapper, IUnitRepository unitRepository)
     {
         _context = context;
         _mapper = mapper;
+        _unitRepository = unitRepository;
     }
 
     public async Task<PagedApiResponse<CategoryTimeTypeModel>> GetAllPagedAsync(int pageNumber, int pageSize)
@@ -43,6 +45,37 @@ public class CategoryTimeTypeRepository : ICategoryTimeTypeRepository
             timeTypes.Count
         );
     }
+
+    public async Task<PagedApiResponse<CategoryTimeTypeModel>> GetAllOfUnit(Guid unitCurrentId)
+    {
+        var units = await _unitRepository.GetAllChildOfUnitAsync(unitCurrentId);
+
+        List<Guid> unitIds = units.DataList!.Select(e => e.Id).ToList();
+
+        var timeTypes = await (from ctt in _context.CategoryTimeTypes
+                               join unit in _context.Units! on ctt.UnitId equals unit.Id
+                               where !ctt.IsDeleted && unitIds.Contains(ctt.UnitId)
+                               select new CategoryTimeTypeModel
+                               {
+                                   Id = ctt.Id,
+                                   UnitId = unit.Id,
+                                   UnitName = unit.UnitName,
+                                   TimeTypeName = ctt.TimeTypeName,
+                                   FromDate = ctt.FromDate,
+                                   ToDate = ctt.ToDate,
+                                   IsDeleted = ctt.IsDeleted,
+                                   UpdatedAt = ctt.UpdatedAt
+                               }).OrderByDescending(e => e.ToDate).ThenBy(e => e.UnitName).ThenBy(e => e.TimeTypeName).ToListAsync();
+
+        return new Pagination().HandleGetAllRespond(
+            0,
+            0,
+            timeTypes,
+            timeTypes.Count
+        );
+    }
+
+
 
     public async Task<PagedApiResponse<CategoryTimeTypeModel>> GetByIdAsync(Guid id)
     {

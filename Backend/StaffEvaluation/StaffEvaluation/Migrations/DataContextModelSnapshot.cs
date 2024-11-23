@@ -370,6 +370,36 @@ namespace StaffEvaluation.Migrations
                     b.ToTable("EvaluationCriteria");
                 });
 
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationCriteriaSample", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryCriteriaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EvaluationSampleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Sort")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryCriteriaId");
+
+                    b.HasIndex("EvaluationSampleId");
+
+                    b.ToTable("EvaluationCriteriaSample");
+                });
+
             modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationDetailsPersonal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -482,6 +512,26 @@ namespace StaffEvaluation.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("EvaluationExplaint");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationSample", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EvaluationSampleName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EvaluationSample");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationUser", b =>
@@ -894,6 +944,25 @@ namespace StaffEvaluation.Migrations
                     b.Navigation("CategoryCriteria");
 
                     b.Navigation("Evaluation");
+                });
+
+            modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationCriteriaSample", b =>
+                {
+                    b.HasOne("StaffEvaluation.Data.Entity.CategoryCriteria", "CategoryCriteria")
+                        .WithMany()
+                        .HasForeignKey("CategoryCriteriaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StaffEvaluation.Data.Entity.EvaluationSample", "EvaluationSample")
+                        .WithMany()
+                        .HasForeignKey("EvaluationSampleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryCriteria");
+
+                    b.Navigation("EvaluationSample");
                 });
 
             modelBuilder.Entity("StaffEvaluation.Data.Entity.EvaluationDetailsPersonal", b =>

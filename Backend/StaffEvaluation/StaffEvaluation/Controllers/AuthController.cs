@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using StaffEvaluation.Models;
 using StaffEvaluation.Repositories.IRepository;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace StaffEvaluation.Controllers;
 
@@ -59,6 +61,35 @@ public class AuthController : Controller
         }
 
         return Ok(user);
+    }
+
+    [HttpGet("sendSms")]
+    public async Task<IActionResult> SendSMS()
+    {
+        // Thông tin Twilio (lấy từ Twilio Console)
+        const string accountSid = "ACa6959627496557760f964fb5c486e455";
+        const string authToken = "1d412dc8bf025d4cf67b53394b51b41b";
+
+        // Khởi tạo Twilio client
+        TwilioClient.Init(accountSid, authToken);
+
+        try
+        {
+            // Gửi SMS
+            var message = MessageResource.Create(
+                body: "Hello! Đây là tin nhắn được gửi từ Twilio qua C#!",
+                from: new Twilio.Types.PhoneNumber("+19789179556"),
+                to: new Twilio.Types.PhoneNumber("+84963176982")
+            );
+
+            System.Diagnostics.Debug.WriteLine($"Tin nhắn đã được gửi thành công với SID: {message.Sid}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Đã xảy ra lỗi: {ex.Message}");
+        }
+
+        return Ok();
     }
 }
 

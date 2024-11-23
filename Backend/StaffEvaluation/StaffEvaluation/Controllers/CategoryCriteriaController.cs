@@ -24,7 +24,9 @@ public class CategoryCriteriaController : Controller
     [Authorize]
     public async Task<IActionResult> GetAll()
     {
-        var get = await _categoryCriteriaRepository.GetAllPagedAsync(0, 0);
+        var unitCurrentId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
+
+        var get = await _categoryCriteriaRepository.GetAllOfUnit(unitCurrentId);
 
         return Ok(get);
     }

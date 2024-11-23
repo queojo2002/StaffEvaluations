@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
 import { CheckCircleOutlined, RetweetOutlined } from "@ant-design/icons";
-import { Button, Col, Divider, Form, Input, Row, Space, Spin, TreeSelect } from "antd";
+import { Button, Col, Divider, Form, Input, Row, Select, Space, Spin, Switch, TreeSelect } from "antd";
 
 import { insertEvaluation } from "~/apis";
 import { renderTreeUnit } from "~/pages/Units/Units";
 
 const NewEvaluation = (props) => {
-  const { refetchApi, closeModal, listUnit } = props;
+  const { refetchApi, closeModal, listUnit, evaluationSampleList } = props;
   const [formRef] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [copy, setIsCopy] = useState(false);
 
   const onFinish = async (values) => {
     setLoading(true);
 
+    console.log(values);
+
     const res = await insertEvaluation(values);
     if (res.isSuccess) {
       formRef.resetFields();
+      setIsCopy(false);
       refetchApi();
       closeModal(false);
     }
@@ -69,6 +73,47 @@ const NewEvaluation = (props) => {
                   treeLine={true}
                   treeData={renderTreeUnit(listUnit)}
                   multiple
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={24}>
+              <Form.Item name="isCopy" label="Thêm mới theo mẫu phiếu có sẵn?" valuePropName="checked">
+                <Switch
+                  checkedChildren={"Có"}
+                  unCheckedChildren={"Không"}
+                  onChange={(checked) => {
+                    setIsCopy(checked);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={24}>
+              <Form.Item
+                hidden={!copy}
+                name={"evaluationSampleId"}
+                label="Chọn mẫu phiếu"
+                rules={
+                  copy
+                    ? [
+                        {
+                          required: true,
+                          message: "Vui lòng chọn mẫu phiếu"
+                        }
+                      ]
+                    : null
+                }
+              >
+                <Select
+                  allowClear
+                  showSearch
+                  style={{ height: 40, width: "100%" }}
+                  placeholder={"Mẫu phiếu"}
+                  options={evaluationSampleList?.map((item) => ({
+                    value: item.id,
+                    label: item.evaluationSampleName
+                  }))}
                 />
               </Form.Item>
             </Col>

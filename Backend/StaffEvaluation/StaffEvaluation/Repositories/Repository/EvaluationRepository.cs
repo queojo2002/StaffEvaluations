@@ -172,10 +172,31 @@ public class EvaluationRepository : IEvaluationRepository
 
     public async Task<PagedApiResponse<EvaluationModel>> InsertListAsync(EvaluationAddPayload entity)
     {
-
         if (entity.ListUnitId == null)
         {
             return new ApiResult().Failure<EvaluationModel>("Vui lòng chọn ít nhất 1 đơn vị sử dụng cho Phiếu đánh giá");
+        }
+
+
+        List<EvaluationCriteriaSample> criteriaSample = new List<EvaluationCriteriaSample>();
+
+        if (entity.IsCopy == true)
+        {
+            var evaluationSample = await _context.EvaluationSamples.Where(e => e.Id == entity.EvaluationSampleId).FirstOrDefaultAsync();
+
+            if (evaluationSample == null)
+            {
+                return new ApiResult().Failure<EvaluationModel>("Mẫu phiếu đánh giá không hợp lệ.");
+            }
+
+            var evaluationCriteriaSample = await _context.EvaluationCriteriaSamples.Where(e => e.EvaluationSampleId == entity.EvaluationSampleId).ToListAsync();
+
+            if (evaluationCriteriaSample == null || evaluationCriteriaSample.Count == 0)
+            {
+                return new ApiResult().Failure<EvaluationModel>("Mẫu phiếu đánh giá này hiện chưa có tiêu chí nào.");
+            }
+
+            criteriaSample = evaluationCriteriaSample;
         }
 
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -184,9 +205,11 @@ public class EvaluationRepository : IEvaluationRepository
         {
             foreach (var unitId in entity.ListUnitId)
             {
+                Guid evaluationId = Guid.NewGuid();
+
                 Evaluation evaluation = new Evaluation()
                 {
-                    Id = Guid.NewGuid(),
+                    Id = evaluationId,
                     UnitId = unitId,
                     CategoryTimeTypeId = null,
                     EvaluationName = entity.EvaluationName,
@@ -198,6 +221,27 @@ public class EvaluationRepository : IEvaluationRepository
                 await _context.AddAsync(evaluation);
 
                 await _context.SaveChangesAsync();
+
+
+                if (entity.IsCopy == true)
+                {
+                    foreach (var item in criteriaSample)
+                    {
+                        EvaluationCriteria criteria = new EvaluationCriteria()
+                        {
+                            Id = Guid.NewGuid(),
+                            EvaluationId = evaluationId,
+                            CategoryCriteriaId = item.CategoryCriteriaId,
+                            Sort = item.Sort,
+                            IsDeleted = false,
+                            UpdatedAt = DateTime.Now,
+                        };
+
+                        await _context.AddAsync(criteria);
+
+                        await _context.SaveChangesAsync();
+                    }
+                }
             }
 
             await transaction.CommitAsync();
@@ -208,7 +252,7 @@ public class EvaluationRepository : IEvaluationRepository
         {
             await transaction.RollbackAsync();
 
-            return new ApiResult().Failure<EvaluationModel>($"Lỗi khi thêm phiếu đánh giá: {ex.InnerException.Message}");
+            return new ApiResult().Failure<EvaluationModel>($"Lỗi khi thêm phiếu đánh giá: {ex.Message}");
         }
     }
 
@@ -234,13 +278,22 @@ public class EvaluationRepository : IEvaluationRepository
                 return new ApiResult().Failure<EvaluationModel>("Không tìm thấy phiếu đánh giá nào để xóa.");
             }
 
-            foreach (var criterion in evaluationToDelete)
-            {
-                criterion.IsDeleted = true;
-                criterion.UpdatedAt = DateTime.Now;
-            }
+
+            var evaluationCriteriaToDelete = await _context.EvaluationCriterias.Where(e => evaluationToDelete.Select(e => e.Id).Contains(e.EvaluationId)).ToListAsync();
+
+            var evaluationUserToDelete = await _context.EvaluationUsers.Where(e => evaluationToDelete.Select(e => e.Id).Contains(e.EvaluationId)).ToListAsync();
+
+
+            _context.RemoveRange(evaluationCriteriaToDelete);
+
+            _context.RemoveRange(evaluationUserToDelete);
 
             await _context.SaveChangesAsync();
+
+            _context.RemoveRange(evaluationToDelete);
+
+            await _context.SaveChangesAsync();
+
             await transaction.CommitAsync();
 
             return new ApiResult().Success<EvaluationModel>("Xóa thành công các phiếu đánh giá.");
@@ -449,7 +502,7 @@ public class EvaluationRepository : IEvaluationRepository
 
             }
         }
-        return new Pagination().HandleGetAllRespond(0, 0, evaluations, evaluations.Count);
+        return new Pagination().HandleGetAllRespond(0, 0, evaluations.OrderByDescending(e => e.Status).ThenBy(e => e.EvaluationName).ThenBy(e => e.UnitName).ThenBy(e => e.FullName), evaluations.Count);
     }
 
     public async Task<PagedApiResponse<EvaluationModel>> GetEvaluationOfUnit(Guid unitId)

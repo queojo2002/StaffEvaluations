@@ -12,11 +12,12 @@ public class CategoryRatingRepository : ICategoryRatingRepository
 {
     private DataContext _context;
     private IMapper _mapper;
-
-    public CategoryRatingRepository(DataContext context, IMapper mapper)
+    private IUnitRepository _unitRepository;
+    public CategoryRatingRepository(DataContext context, IMapper mapper, IUnitRepository unitRepository)
     {
         _context = context;
         _mapper = mapper;
+        _unitRepository = unitRepository;
     }
 
     public async Task<PagedApiResponse<CategoryRatingModel>> GetAllPagedAsync(int pageNumber, int pageSize)
@@ -43,6 +44,37 @@ public class CategoryRatingRepository : ICategoryRatingRepository
             ratings.Count
         );
     }
+
+    public async Task<PagedApiResponse<CategoryRatingModel>> GetAllOfUnit(Guid unitCurrentId)
+    {
+        var units = await _unitRepository.GetAllChildOfUnitAsync(unitCurrentId);
+
+        List<Guid> unitIds = units.DataList!.Select(e => e.Id).ToList();
+
+
+        var ratings = await (from cr in _context.CategoryRatings
+                             join unit in _context.Units! on cr.UnitId equals unit.Id
+                             where !cr.IsDeleted && unitIds.Contains(cr.UnitId)
+                             select new CategoryRatingModel
+                             {
+                                 Id = cr.Id,
+                                 UnitId = unit.Id,
+                                 UnitName = unit.UnitName,
+                                 RatingName = cr.RatingName,
+                                 StartValue = cr.StartValue,
+                                 EndValue = cr.EndValue,
+                                 IsDeleted = cr.IsDeleted,
+                                 UpdatedAt = cr.UpdatedAt
+                             }).OrderBy(e => e.UnitName).ThenBy(e => e.EndValue).ThenBy(e => e.RatingName).ToListAsync();
+
+        return new Pagination().HandleGetAllRespond(
+            0,
+            0,
+            ratings,
+            ratings.Count
+        );
+    }
+
 
     public async Task<PagedApiResponse<CategoryRatingModel>> GetByIdAsync(Guid id)
     {

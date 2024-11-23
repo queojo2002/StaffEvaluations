@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import { CheckCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Alert, Button, Col, Divider, Form, Row, Space, Spin, Switch, Table } from "antd";
 
-import { getEvaluationCriteriaById, insertAndRemoveListEvaluationCriteria } from "~/apis";
+import {
+  getEvaluationCriteriaById,
+  getEvaluationCriteriaSampleById,
+  insertAndRemoveListEvaluationCriteria,
+  insertAndRemoveListEvaluationCriteriaSample
+} from "~/apis";
 import { renderTreeCriteria } from "~/pages/EvaluationCriteria/NewAndUpdateEvaluationCriteria";
 import { listItemBeforeStyle, listItemStyle, listStyle } from "~/utils/styleCustom";
 
 const AddAndUpdateCriteriaToEvaluation = (props) => {
-  const { id, refetchApi, closeModal, listCategoryCriteria } = props;
+  const { id, refetchApi, closeModal, listCategoryCriteria, evaluationSampleId } = props;
   const [loading, setLoading] = useState(false);
   const [checkStrictly, setCheckStrictly] = useState(true);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -34,9 +39,11 @@ const AddAndUpdateCriteriaToEvaluation = (props) => {
     return resultIds;
   };
 
-  const fetchById = async (id) => {
+  const fetchById = async (evaluationSampleId, id) => {
     setLoading(true);
-    const res = await getEvaluationCriteriaById(id);
+    const res = evaluationSampleId
+      ? await getEvaluationCriteriaSampleById(evaluationSampleId)
+      : await getEvaluationCriteriaById(id);
 
     setSelectedRowKeys(
       getFilteredIds(
@@ -98,10 +105,15 @@ const AddAndUpdateCriteriaToEvaluation = (props) => {
   const onFinish = async () => {
     setLoading(true);
 
-    const res = await insertAndRemoveListEvaluationCriteria({
-      evaluationIds: [id],
-      listCategoryCriteriaId: selectedRowKeys
-    });
+    const res = evaluationSampleId
+      ? await insertAndRemoveListEvaluationCriteriaSample({
+          evaluationSampleId: evaluationSampleId,
+          listCategoryCriteriaId: selectedRowKeys
+        })
+      : await insertAndRemoveListEvaluationCriteria({
+          evaluationIds: [id],
+          listCategoryCriteriaId: selectedRowKeys
+        });
 
     if (res.isSuccess) {
       refetchApi();
@@ -115,9 +127,11 @@ const AddAndUpdateCriteriaToEvaluation = (props) => {
 
   useEffect(() => {
     if (id) {
-      fetchById(id);
+      fetchById(null, id);
+    } else if (evaluationSampleId) {
+      fetchById(evaluationSampleId, null);
     }
-  }, [id, refetchApi]);
+  }, [evaluationSampleId, id, refetchApi]);
 
   return (
     <div className="AddAndUpdateCriteriaToEvaluation">

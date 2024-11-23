@@ -6,6 +6,12 @@ public class EvaluationCriteriaUpdateSortPayload
     public List<CriteriaUpdateSortPayload>? ListCategoryCriterias { get; set; }
 }
 
+public class EvaluationCriteriaSampleUpdateSortPayload
+{
+    public Guid EvaluationSampleId { get; set; }
+    public List<CriteriaUpdateSortPayload>? ListCategoryCriterias { get; set; }
+}
+
 public class CriteriaUpdateSortPayload
 {
     public Guid CategoryCriteriaId { get; set; }

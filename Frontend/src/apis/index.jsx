@@ -13,6 +13,10 @@ export const refreshTokenAPI = async (access_token, refresh_token) => {
   });
 };
 
+export const getAllEvaluationSample = async () => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationSample/getAll`);
+};
+
 export const getListMenuOfUser = async () => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/user/getListMenuOfUser`);
 };
@@ -111,6 +115,10 @@ export const insertRoleAndMenuItems = async (values) => {
   });
 };
 
+export const insertEvaluationSample = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationSample/insert`, values);
+};
+
 export const insertUserType = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/userType/insert`, values);
 };
@@ -150,6 +158,13 @@ export const insertEvaluationConsolidationAndTransfer = async (values) => {
 export const insertAndRemoveListEvaluationCriteria = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteria/insertAndRemoveList`, {
     evaluationIds: values.evaluationIds,
+    listCategoryCriteriaId: values.listCategoryCriteriaId
+  });
+};
+
+export const insertAndRemoveListEvaluationCriteriaSample = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteriaSample/insertAndRemoveList`, {
+    evaluationSampleId: values.evaluationSampleId,
     listCategoryCriteriaId: values.listCategoryCriteriaId
   });
 };
@@ -237,6 +252,10 @@ export const getAllMenuItemsByRoleId = async (roleId) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/roles/getAllMenuItemsByRoleId?roleId=${roleId}`);
 };
 
+export const getEvaluationSampleById = async (id) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationSample/${id}`);
+};
+
 export const getUserTypeById = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/userType/${id}`);
 };
@@ -273,8 +292,16 @@ export const getListCriteriaByIdEvaluation = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteria/getListCriteria/${id}`);
 };
 
+export const getListCriteriaByIdEvaluationSample = async (id) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteriaSample/getListCriteria/${id}`);
+};
+
 export const getEvaluationCriteriaById = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteria/${id}`);
+};
+
+export const getEvaluationCriteriaSampleById = async (id) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteriaSample/${id}`);
 };
 
 export const getEvaluationOfUser = async () => {
@@ -314,6 +341,10 @@ export const updateUserType = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/userType/update`, values);
 };
 
+export const updateEvaluationSample = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationSample/update`, values);
+};
+
 export const updateUser = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/user/update`, values);
 };
@@ -345,6 +376,13 @@ export const updateEvaluation = async (values) => {
 export const updateSortEvaluation = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteria/updateSort`, {
     evaluationId: values.evaluationId,
+    listCategoryCriterias: values.listCategoryCriterias
+  });
+};
+
+export const updateSortEvaluationCriteriaSample = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationCriteriaSample/updateSort`, {
+    evaluationSampleId: values.evaluationSampleId,
     listCategoryCriterias: values.listCategoryCriterias
   });
 };
@@ -387,6 +425,10 @@ export const removeCategoryComment = async (ids) => {
 
 export const removeEvaluation = async (ids) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/evaluation/removeRange`, ids);
+};
+
+export const removeEvaluationSample = async (ids) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/evaluationSample/removeRange`, ids);
 };
 
 export const removeUserFromEvaluation = async (values) => {

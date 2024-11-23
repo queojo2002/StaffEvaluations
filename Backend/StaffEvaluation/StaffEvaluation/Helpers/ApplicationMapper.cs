@@ -17,6 +17,7 @@ public class ApplicationMapper : Profile
         CreateMap<CategoryTimeType, CategoryTimeTypeModel>().ReverseMap();
         CreateMap<CategoryComment, CategoryCommentModel>().ReverseMap();
         CreateMap<CategoryProsCons, CategoryProsConsModel>().ReverseMap();
+        CreateMap<EvaluationSample, EvaluationSampleModel>().ReverseMap();
     }
 }
 

@@ -13,6 +13,7 @@ import {
   IconDashboard,
   IconDeploymentUnit,
   IconDocument_justified,
+  IconFileDocumentMultiple,
   IconPersonRolodex,
   IconScoreboardOutline,
   IconThumbsUpDown,
@@ -29,6 +30,7 @@ import SupervisorEvaluation from "~/pages/EvaluationForms/SupervisorEvaluation";
 import EvaluationPeriods from "~/pages/EvaluationPeriods/EvaluationPeriods";
 import EvaluationProsCons from "~/pages/EvaluationProsCons/EvaluationProsCons";
 import EvaluationRatings from "~/pages/EvaluationRatings/EvaluationRatings";
+import EvaluationSample from "~/pages/EvaluationSample/EvaluationSample";
 import EvaluationConsolidationAndTransfer from "~/pages/Statistics/EvaluationConsolidationAndTransfer";
 import EvaluationStatistics from "~/pages/Statistics/EvaluationStatistics";
 import Users from "~/pages/Users/Users";
@@ -50,7 +52,8 @@ export const iconMapping = {
   IconUserShield: IconUserShield,
   IconBxUserCheck: IconBxUserCheck,
   IconAccountSupervisorOutline: IconAccountSupervisorOutline,
-  IconBxTransfer: IconBxTransfer
+  IconBxTransfer: IconBxTransfer,
+  IconFileDocumentMultiple: IconFileDocumentMultiple
 };
 
 export const componentsMapping = {
@@ -68,5 +71,6 @@ export const componentsMapping = {
   "self-evaluation": <SelfEvaluation />,
   "supervisor-evaluation": <SupervisorEvaluation />,
   roles: <Roles />,
-  "consolidation-and-transfer": <EvaluationConsolidationAndTransfer />
+  "consolidation-and-transfer": <EvaluationConsolidationAndTransfer />,
+  "evaluations-sample": <EvaluationSample />
 };

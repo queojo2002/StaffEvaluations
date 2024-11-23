@@ -40,6 +40,9 @@ public class DataContext : DbContext
     public DbSet<EvaluationExplaint> EvaluationExplaints { get; set; }
     public DbSet<EvaluationConsolidationAndTransfer> EvaluationConsolidationAndTransfer { get; set; }
     public DbSet<EvaluationConsolidationAndTransferDetails> EvaluationConsolidationAndTransferDetails { get; set; }
+    public DbSet<EvaluationSample> EvaluationSamples { get; set; }
+    public DbSet<EvaluationCriteriaSample> EvaluationCriteriaSamples { get; set; }
+
 
     #endregion
 

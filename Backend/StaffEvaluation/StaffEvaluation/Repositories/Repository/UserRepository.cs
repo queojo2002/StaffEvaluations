@@ -295,7 +295,7 @@ public class UserRepository : IUserRepository
                                         IsDeleted = user.IsDeleted,
                                         UpdatedAt = user.UpdatedAt
                                     }
-                                ).OrderBy(e => e.FullName).ToListAsync();
+                                ).OrderBy(e => e.UnitName).ThenBy(e => e.UserTypeName).ThenBy(e => e.FullName).ToListAsync();
 
         return new Pagination().HandleGetAllRespond(
             0,
@@ -600,6 +600,7 @@ public class UserRepository : IUserRepository
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine(ex);
             return false;
         }
     }
