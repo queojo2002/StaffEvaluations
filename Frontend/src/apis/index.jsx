@@ -85,10 +85,19 @@ export const getAllCATEvaluationsByConsolidationId = async (evaluationConsolidat
   );
 };
 
-export const getAllEvaluationExplaintCustom = async (values) => {
-  return await apiInstance.put(`${BACKEND_API}/api/v1/evaluationExplaint/getAllCustom`, {
+export const getAllEvaluationExplaintWithUser = async (values) => {
+  return await apiInstance.put(`${BACKEND_API}/api/v1/evaluationExplaint/getAllWithUser`, {
     evaluationId: values.evaluationId,
     categoryCriteriaId: values.categoryCriteriaId,
+    userIds: values.userIds
+  });
+};
+
+export const getAllEvaluationExplaintWithSupervisor = async (values) => {
+  return await apiInstance.put(`${BACKEND_API}/api/v1/evaluationExplaint/getAllWithSupervisor`, {
+    evaluationId: values.evaluationId,
+    categoryCriteriaId: values.categoryCriteriaId,
+    userId: values.userId,
     userIds: values.userIds
   });
 };
@@ -198,6 +207,11 @@ export const insertEvaluationExplaint = async (values) => {
   formData.append("modelPayload.EvaluationId", values.evaluationId);
   formData.append("modelPayload.CategoryCriteriaId", values.categoryCriteriaId);
   formData.append("modelPayload.Note", values.note);
+  formData.append("modelPayload.Type", values.type);
+
+  if (values.userId) {
+    formData.append("modelPayload.UserId", values.userId);
+  }
 
   if (values.fileAttachments) {
     formData.append("fileAttachments", values.fileAttachments);
@@ -495,6 +509,12 @@ export const exportWordSampleCAT = async (evaluationConsolidationAndTransferId) 
       responseType: "blob"
     }
   );
+};
+
+export const getFileAttachments = async (id) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationExplaint/getFileAttachments?id=${id}`, {
+    responseType: "blob"
+  });
 };
 
 export const confirmConsolidationAndTransferEvaluations = async (values) => {

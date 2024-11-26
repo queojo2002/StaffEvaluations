@@ -6,12 +6,28 @@ namespace StaffEvaluation.Data.Entity;
 public class EvaluationExplaint
 {
     public Guid Id { get; set; }
-    [ForeignKey("EvaluationId")]
+
+
+    [ForeignKey("Evaluation")]
+    public Guid? EvaluationId { get; set; }
     public Evaluation? Evaluation { get; set; }
-    [ForeignKey("UserId")]
+
+
+    [ForeignKey("User")]
+    public Guid? UserId { get; set; }
     public User? User { get; set; }
-    [ForeignKey("CategoryCriteriaId")]
+
+
+    [ForeignKey("Supervisor")]
+    public Guid? SupervisorId { get; set; }
+    public User? Supervisor { get; set; }
+
+
+    [ForeignKey("CategoryCriteria")]
+    public Guid? CategoryCriteriaId { get; set; }
     public CategoryCriteria? CategoryCriteria { get; set; }
+
+
     public string? Note { get; set; }
     public string? FileAttachments { get; set; }
     public bool IsDeleted { get; set; }

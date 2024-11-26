@@ -804,6 +804,7 @@ const EvaluationDetailsUser = (props) => {
           categoryCriteriaId={explaintCategoryCriteriaId}
           evaluationId={evaluationId}
           userIds={userIds}
+          type={1}
         />
       </Modal>
 

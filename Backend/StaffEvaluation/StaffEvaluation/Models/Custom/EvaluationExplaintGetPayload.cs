@@ -4,7 +4,7 @@ public class EvaluationExplaintGetPayload
 {
     public Guid? EvaluationId { get; set; }
     public Guid? CategoryCriteriaId { get; set; }
-
+    public Guid? UserId { get; set; }
     public List<Guid>? UserIds { get; set; }
 }
 

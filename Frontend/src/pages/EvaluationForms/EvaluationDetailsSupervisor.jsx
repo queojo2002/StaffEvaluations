@@ -818,7 +818,9 @@ const EvaluationDetailsSupervisor = (props) => {
           closeModal={setIsOpenNewAndUpdateEvaluationExplaint}
           categoryCriteriaId={explaintCategoryCriteriaId}
           evaluationId={evaluationId}
+          userId={userId}
           userIds={userIds}
+          type={2}
         />
       </Modal>
 

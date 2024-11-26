@@ -6,7 +6,10 @@ namespace StaffEvaluation.Repositories.IRepository;
 
 public interface IEvaluationExplaintRepository : IRepository<EvaluationExplaintModel>
 {
-    Task<PagedApiResponse<EvaluationExplaintModel>> GetAllCustomAsync(EvaluationExplaintGetPayload model, Guid userCurrentId);
+    Task<PagedApiResponse<EvaluationExplaintModel>> GetAllWithUserAsync(EvaluationExplaintGetPayload model, Guid userCurrentId);
+
+    Task<PagedApiResponse<EvaluationExplaintModel>> GetAllWithSupervisorAsync(EvaluationExplaintGetPayload model, Guid userId, Guid userCurrentId);
+
 
 }
 

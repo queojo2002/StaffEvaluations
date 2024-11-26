@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StaffEvaluation.Data;
 using StaffEvaluation.Helpers;
 using StaffEvaluation.Models;
@@ -22,16 +23,64 @@ public class EvaluationExplaintController : Controller
     }
 
 
-    [HttpPut("getAllCustom")]
+    [HttpPut("getAllWithUser")]
     [Authorize]
-    public async Task<IActionResult> GetAllCustom(EvaluationExplaintGetPayload model)
+    public async Task<IActionResult> GetAllWithUser(EvaluationExplaintGetPayload model)
     {
         var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
 
-        var get = await _evaluationExplaintRepository.GetAllCustomAsync(model, userId);
+        var get = await _evaluationExplaintRepository.GetAllWithUserAsync(model, userId);
 
         return Ok(get);
     }
+
+
+    [HttpPut("getAllWithSupervisor")]
+    [Authorize]
+    public async Task<IActionResult> GetAllWithSupervisor(EvaluationExplaintGetPayload model)
+    {
+        var userCurrentId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        if (model.UserId == null)
+        {
+            return BadRequest(new ApiResult().Failure<EvaluationExplaintModel>($"Có lỗi khi lấy giải trình."));
+        }
+
+        var get = await _evaluationExplaintRepository.GetAllWithSupervisorAsync(model, model.UserId ?? Guid.Empty, userCurrentId);
+
+        return Ok(get);
+    }
+
+
+    [HttpGet("getFileAttachments")]
+    [Authorize]
+    public async Task<IActionResult> GetFileAttachments(Guid id)
+    {
+        var evaluationExplaint = await _context.EvaluationExplaints
+            .Where(e => e.Id == id)
+            .FirstOrDefaultAsync();
+
+        if (evaluationExplaint == null)
+        {
+            return Ok(new ApiResult().Failure<EvaluationExplaintModel>($"Có lỗi khi lấy tệp giải trình."));
+        }
+        else if (evaluationExplaint.FileAttachments == null)
+        {
+            return Ok(new ApiResult().Failure<EvaluationExplaintModel>($"Giải trình này không tồn tại tệp."));
+        }
+
+        string filePath = Path.Combine("C:\\SA\\ServerFileExplaint\\", evaluationExplaint.FileAttachments + ".pdf");
+
+        if (!System.IO.File.Exists(filePath))
+        {
+            return Ok(new ApiResult().Failure<EvaluationExplaintModel>($"Giải trình này không tồn tại tệp."));
+        }
+
+        byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+        return File(fileBytes, "application/pdf", evaluationExplaint.FileAttachments + ".pdf");
+    }
+
 
     [HttpPost("insert")]
     [Authorize]
@@ -41,15 +90,26 @@ public class EvaluationExplaintController : Controller
 
         string currentTimeWithMilliseconds = DateTime.Now.ToString("yyyyMMddHHmmssfff");
 
+        EvaluationExplaintModel model = new EvaluationExplaintModel();
 
-        EvaluationExplaintModel model = new EvaluationExplaintModel()
+        if (modelPayload.Type == 2)
         {
-            UserId = userId,
-            EvaluationId = modelPayload.EvaluationId,
-            CategoryCriteriaId = modelPayload.CategoryCriteriaId,
-            Note = modelPayload.Note,
-            FileAttachments = fileAttachments != null ? currentTimeWithMilliseconds : null
-        };
+            model.UserId = modelPayload.UserId;
+            model.SupervisorId = userId;
+            model.EvaluationId = modelPayload.EvaluationId;
+            model.CategoryCriteriaId = modelPayload.CategoryCriteriaId;
+            model.Note = modelPayload.Note;
+            model.FileAttachments = fileAttachments != null ? currentTimeWithMilliseconds : null;
+        }
+        else
+        {
+            model.UserId = userId;
+            model.EvaluationId = modelPayload.EvaluationId;
+            model.CategoryCriteriaId = modelPayload.CategoryCriteriaId;
+            model.Note = modelPayload.Note;
+            model.FileAttachments = fileAttachments != null ? currentTimeWithMilliseconds : null;
+        }
+
 
 
         if (fileAttachments != null)

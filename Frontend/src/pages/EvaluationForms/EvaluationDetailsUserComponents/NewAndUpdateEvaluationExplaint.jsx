@@ -5,11 +5,16 @@ import TextArea from "antd/es/input/TextArea";
 import Dragger from "antd/es/upload/Dragger";
 import dayjs from "dayjs";
 
-import { getAllEvaluationExplaintCustom, insertEvaluationExplaint } from "~/apis";
+import {
+  getAllEvaluationExplaintWithSupervisor,
+  getAllEvaluationExplaintWithUser,
+  getFileAttachments,
+  insertEvaluationExplaint
+} from "~/apis";
 import { openNotificationTopLeft } from "~/utils/openNotification";
 
 const NewAndUpdateEvaluationExplaint = (props) => {
-  const { closeModal, categoryCriteriaId, evaluationId, userIds } = props;
+  const { closeModal, categoryCriteriaId, evaluationId, userIds, userId, type } = props;
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,11 +24,18 @@ const NewAndUpdateEvaluationExplaint = (props) => {
 
   const fetchUserTypeById = async (evaluationId, categoryCriteriaId, userIds) => {
     setLoading(true);
-    const res = await getAllEvaluationExplaintCustom({
-      evaluationId: evaluationId,
-      categoryCriteriaId: categoryCriteriaId,
-      userIds: userIds
-    });
+    const res = !userId
+      ? await getAllEvaluationExplaintWithUser({
+          evaluationId: evaluationId,
+          categoryCriteriaId: categoryCriteriaId,
+          userIds: userIds
+        })
+      : await getAllEvaluationExplaintWithSupervisor({
+          evaluationId: evaluationId,
+          categoryCriteriaId: categoryCriteriaId,
+          userId: userId,
+          userIds: userIds
+        });
     setData(res.dataList);
     setLoading(false);
   };
@@ -37,10 +49,12 @@ const NewAndUpdateEvaluationExplaint = (props) => {
       return;
     }
     const res = await insertEvaluationExplaint({
+      userId: userId,
       evaluationId: evaluationId,
       categoryCriteriaId: categoryCriteriaId,
       note: note,
-      fileAttachments: file
+      fileAttachments: file,
+      type: type
     });
 
     if (res.isSuccess) {
@@ -50,6 +64,29 @@ const NewAndUpdateEvaluationExplaint = (props) => {
       await fetchUserTypeById(evaluationId, categoryCriteriaId, userIds);
     }
     setLoading(false);
+  };
+
+  const handleViewFile = async (id) => {
+    setLoading(true);
+    try {
+      const res = await getFileAttachments(id);
+
+      if (res.type === "application/json") {
+        openNotificationTopLeft("warning", "Thông báo", "Giải trình này không tồn tại tệp.");
+        return;
+      }
+
+      const data = res;
+
+      const file = new Blob([data], { type: "application/pdf" });
+
+      const fileURL = window.URL.createObjectURL(file);
+      window.open(fileURL, "_blank");
+    } catch (e) {
+      console.error("Error downloading PDF:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
@@ -84,7 +121,12 @@ const NewAndUpdateEvaluationExplaint = (props) => {
       width: 80,
       render: (item, record) => (
         <div style={{ whiteSpace: "pre-wrap", width: "100%" }}>
-          <EyeOutlined style={{ cursor: "pointer", fontSize: 17 }} />
+          <EyeOutlined
+            style={{ cursor: "pointer", fontSize: 17 }}
+            onClick={() => {
+              handleViewFile(record.id);
+            }}
+          />
         </div>
       )
     },
@@ -112,6 +154,7 @@ const NewAndUpdateEvaluationExplaint = (props) => {
       <Row gutter={16}>
         <Col span={12}>
           <Dragger
+            accept=".pdf"
             multiple={false}
             maxCount={1}
             beforeUpload={(file) => {

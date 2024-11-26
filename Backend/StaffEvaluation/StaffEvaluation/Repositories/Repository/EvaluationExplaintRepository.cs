@@ -27,7 +27,45 @@ public class EvaluationExplaintRepository : IEvaluationExplaintRepository
         throw new NotImplementedException();
     }
 
-    public async Task<PagedApiResponse<EvaluationExplaintModel>> GetAllCustomAsync(EvaluationExplaintGetPayload model, Guid userCurrentId)
+    public async Task<PagedApiResponse<EvaluationExplaintModel>> GetAllWithUserAsync(EvaluationExplaintGetPayload model, Guid userCurrentId)
+    {
+        if (model.UserIds == null)
+        {
+            model.UserIds = new List<Guid>();
+        }
+
+        var datas = await _context.EvaluationExplaints
+                                  .Where(ee =>
+                                         ee.EvaluationId == model.EvaluationId &&
+                                         ee.IsDeleted == false &&
+                                         ee.CategoryCriteriaId == model.CategoryCriteriaId &&
+                                         ee.UserId == userCurrentId &&
+                                         (model.UserIds.Contains(ee.SupervisorId ?? Guid.Empty) || ee.SupervisorId == null)
+                                  )
+                                  .Select(ees => new EvaluationExplaintModel
+                                  {
+                                      Id = ees.Id,
+                                      CategoryCriteriaId = ees.CategoryCriteria!.Id,
+                                      EvaluationId = ees.Evaluation!.Id,
+                                      UserId = ees.User!.Id,
+                                      SupervisorId = ees.SupervisorId,
+                                      FullName = ees.SupervisorId == null ? ees.User!.FullName : ees.Supervisor!.FullName,
+                                      Note = ees.Note,
+                                      FileAttachments = ees.FileAttachments,
+                                      IsDeleted = ees.IsDeleted,
+                                      UpdatedAt = ees.UpdatedAt
+                                  }).OrderByDescending(e => e.UpdatedAt).ToListAsync();
+
+
+        return new Pagination().HandleGetAllRespond(
+            0,
+            0,
+            datas,
+            datas.Count
+        );
+    }
+
+    public async Task<PagedApiResponse<EvaluationExplaintModel>> GetAllWithSupervisorAsync(EvaluationExplaintGetPayload model, Guid userId, Guid userCurrentId)
     {
         if (model.UserIds == null)
         {
@@ -38,27 +76,27 @@ public class EvaluationExplaintRepository : IEvaluationExplaintRepository
             model.UserIds.Add(userCurrentId);
         }
 
-
         var datas = await _context.EvaluationExplaints
-            .Where(ee => !ee.Evaluation!.IsDeleted &&
-                         !ee.CategoryCriteria!.IsDeleted &&
-                          ee.Evaluation!.Id == model.EvaluationId &&
-                          ee.CategoryCriteria!.Id == model.CategoryCriteriaId &&
-                          model.UserIds!.Contains(ee.User!.Id)
-                          )
-            .Select(ees => new EvaluationExplaintModel
-            {
-                Id = ees.Id,
-                CategoryCriteriaId = ees.CategoryCriteria!.Id,
-                EvaluationId = ees.Evaluation!.Id,
-                UserId = ees.User!.Id,
-                FullName = ees.User!.FullName,
-                Note = ees.Note,
-                FileAttachments = ees.FileAttachments,
-                IsDeleted = ees.IsDeleted,
-                UpdatedAt = ees.UpdatedAt
-            }).OrderByDescending(e => e.UpdatedAt).ToListAsync();
-
+                                  .Where(ee =>
+                                         ee.EvaluationId == model.EvaluationId &&
+                                         ee.IsDeleted == false &&
+                                         ee.CategoryCriteriaId == model.CategoryCriteriaId &&
+                                         ee.UserId == userId &&
+                                         (model.UserIds.Contains(ee.SupervisorId ?? Guid.Empty) || ee.SupervisorId == null)
+                                  )
+                                  .Select(ees => new EvaluationExplaintModel
+                                  {
+                                      Id = ees.Id,
+                                      CategoryCriteriaId = ees.CategoryCriteria!.Id,
+                                      EvaluationId = ees.Evaluation!.Id,
+                                      UserId = ees.User!.Id,
+                                      SupervisorId = ees.SupervisorId,
+                                      FullName = ees.SupervisorId == null ? ees.User!.FullName : ees.Supervisor!.FullName,
+                                      Note = ees.Note,
+                                      FileAttachments = ees.FileAttachments,
+                                      IsDeleted = ees.IsDeleted,
+                                      UpdatedAt = ees.UpdatedAt
+                                  }).OrderByDescending(e => e.UpdatedAt).ToListAsync();
 
 
         return new Pagination().HandleGetAllRespond(
@@ -68,6 +106,8 @@ public class EvaluationExplaintRepository : IEvaluationExplaintRepository
             datas.Count
         );
     }
+
+
 
     public Task<PagedApiResponse<EvaluationExplaintModel>> GetByIdAsync(Guid id)
     {
@@ -95,9 +135,10 @@ public class EvaluationExplaintRepository : IEvaluationExplaintRepository
             var ee = new EvaluationExplaint
             {
                 Id = Guid.NewGuid(),
-                Evaluation = evaluation,
-                User = user,
-                CategoryCriteria = categoryCriteria,
+                EvaluationId = entity.EvaluationId,
+                UserId = entity.UserId,
+                SupervisorId = entity.SupervisorId,
+                CategoryCriteriaId = entity.CategoryCriteriaId,
                 Note = entity.Note,
                 FileAttachments = entity.FileAttachments,
                 IsDeleted = false,
@@ -128,5 +169,7 @@ public class EvaluationExplaintRepository : IEvaluationExplaintRepository
     {
         throw new NotImplementedException();
     }
+
+
 }
 

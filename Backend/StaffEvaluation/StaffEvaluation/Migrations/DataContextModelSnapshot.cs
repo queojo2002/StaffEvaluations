@@ -497,6 +497,9 @@ namespace StaffEvaluation.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("SupervisorId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -508,6 +511,8 @@ namespace StaffEvaluation.Migrations
                     b.HasIndex("CategoryCriteriaId");
 
                     b.HasIndex("EvaluationId");
+
+                    b.HasIndex("SupervisorId");
 
                     b.HasIndex("UserId");
 
@@ -1025,6 +1030,10 @@ namespace StaffEvaluation.Migrations
                         .WithMany()
                         .HasForeignKey("EvaluationId");
 
+                    b.HasOne("StaffEvaluation.Data.Entity.User", "Supervisor")
+                        .WithMany()
+                        .HasForeignKey("SupervisorId");
+
                     b.HasOne("StaffEvaluation.Data.Entity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
@@ -1032,6 +1041,8 @@ namespace StaffEvaluation.Migrations
                     b.Navigation("CategoryCriteria");
 
                     b.Navigation("Evaluation");
+
+                    b.Navigation("Supervisor");
 
                     b.Navigation("User");
                 });
