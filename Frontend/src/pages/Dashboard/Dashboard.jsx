@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { BookOutlined, DeploymentUnitOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
+import { Pie } from "@ant-design/plots";
+import { Column } from "@ant-design/plots";
 import { Badge, Card, Col, Row, Skeleton, Spin, Typography } from "antd";
 
 import { getAnalyst } from "~/apis";
@@ -8,11 +10,49 @@ const Dashboard = () => {
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const [datas, setDatas] = useState([]);
+  const [data, setData] = useState([]);
+  const [configTwo, setConfigTwo] = useState({});
+
+  const config = {
+    data,
+    angleField: "value",
+    colorField: "type",
+    label: {
+      text: "value",
+      style: {
+        fontWeight: "bold"
+      }
+    },
+    legend: {
+      color: {
+        title: false,
+        position: "right",
+        rowPadding: 3
+      }
+    }
+  };
 
   const fetchApiGetAll = async () => {
     setLoading(true);
     const data1 = await getAnalyst();
     setDatas(data1);
+    setData([
+      { type: "Hoàn thành xuất sắc nhiệm vụ", value: data1.totalNowHTXSNV },
+      { type: "Hoàn thành tốt nhiệm vụ", value: data1.totalNowHTTNV },
+      { type: "Hoàn thành nhiệm vụ", value: data1.totalNowHTNV },
+      { type: "Không hoàn thành nhiệm vụ", value: data1.totalNowKHTNV },
+      { type: "Chưa hoàn thành/thực hiện", value: data1.totalNowChuaThuchienHoanThanh }
+    ]);
+    setConfigTwo({
+      data: data1.analystColumns,
+      xField: "month",
+      yField: "total",
+      colorField: "name",
+      group: true,
+      style: {
+        inset: 5
+      }
+    });
     setLoading(false);
   };
 
@@ -162,41 +202,43 @@ const Dashboard = () => {
           </Col>
         </Row>
 
-        <Row gutter={[24, 0]}>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24} className="mb-24">
+        <Row gutter={[24, 0]} style={{ display: "flex", alignItems: "stretch" }}>
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            xl={24}
+            style={{ display: "flex", flexDirection: "column" }}
+            className="mb-24"
+          >
             <Spin size="large" spinning={false}>
               <Badge.Ribbon text="Mới" color="red">
-                <Card bordered={false} className="criclebox h-full">
-                  <Title level={5}>
-                    {" "}
-                    Biểu đồ thống kê số lượng người dùng đã tham gia đánh giá theo từng phiếu đánh giá
-                  </Title>
-                  {/* <ColumnChart data={dataChartsCompeted} /> */}
+                <Card bordered={false} className="criclebox h-full" style={{ flex: 1 }}>
+                  <Title level={5}>Biểu đồ thống kê tình hình xếp loại gần nhất của đơn vị</Title>
+                  {<Pie {...config} />}
                 </Card>
               </Badge.Ribbon>
             </Spin>
           </Col>
-        </Row>
 
-        <Row gutter={[24, 0]}>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24} className="mb-24">
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={24}
+            xl={24}
+            style={{ display: "flex", flexDirection: "column" }}
+            className="mb-24"
+          >
             <Spin size="large" spinning={false}>
               <Badge.Ribbon text="Mới" color="red">
-                <Card bordered={false} className="criclebox h-full">
-                  <Title level={5}>
-                    {" "}
-                    Biểu đồ thống kê số lượng người dùng chưa/không tham gia đánh giá theo từng phiếu đánh giá
-                  </Title>
-                  {/* <ColumnChart data={dataChartsPending} /> */}
+                <Card bordered={false} className="criclebox h-full" style={{ flex: 1 }}>
+                  <Title level={5}>Biểu đồ thống kê tình hình xếp loại theo thời gian của đơn vị</Title>
+                  {<Column {...configTwo} />}
                 </Card>
               </Badge.Ribbon>
             </Spin>
-          </Col>
-        </Row>
-
-        <Row gutter={[24, 0]}>
-          <Col xs={24} md={24} sm={24} lg={24} xl={24}>
-            {/* <CompanyIntroduction /> */}
           </Col>
         </Row>
       </div>
