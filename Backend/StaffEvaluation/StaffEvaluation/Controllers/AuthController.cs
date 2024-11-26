@@ -67,8 +67,8 @@ public class AuthController : Controller
     public async Task<IActionResult> SendSMS()
     {
         // Thông tin Twilio (lấy từ Twilio Console)
-        const string accountSid = "ACa6959627496557760f964fb5c486e455";
-        const string authToken = "1d412dc8bf025d4cf67b53394b51b41b";
+        const string accountSid = "";
+        const string authToken = "";
 
         // Khởi tạo Twilio client
         TwilioClient.Init(accountSid, authToken);
