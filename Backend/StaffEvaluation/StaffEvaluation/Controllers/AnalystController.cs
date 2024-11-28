@@ -45,6 +45,206 @@ public class AnalystController : Controller
         _configuration = configuration;
     }
 
+    [HttpGet("exportUserEvaluationDataToExcel")]
+    [Authorize]
+    public async Task<IActionResult> ExportUserEvaluationDataToExcel(Guid userId)
+    {
+        //var userCurrentId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        try
+        {
+            var user = await _context.Users!.Where(e => e.Id == userId).FirstOrDefaultAsync();
+
+            if (user == null) return Ok();
+
+            var userType = await _context.UserTypes!.Where(e => e.Id == user.UserTypeId).FirstOrDefaultAsync();
+
+            var unit = await _context.Units!.Where(u => u.Id == user.UnitId).FirstOrDefaultAsync();
+
+            if (unit == null || userType == null) return Ok();
+
+            var listEvaluationOfUser = await _context.EvaluationUsers.Where(eu => eu.UserId == userId && eu.Type == 1).Select(eu => eu.EvaluationId).ToListAsync();
+
+            if (listEvaluationOfUser == null || listEvaluationOfUser.Count == 0)
+            {
+                return Ok();
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                using (var package = new ExcelPackage(stream))
+                {
+                    int countSheet = 0;
+
+                    foreach (var evaluationId in listEvaluationOfUser)
+                    {
+                        var evaluationDetailsPersonal = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == evaluationId && e.UserId == userId && e.Status >= 2).FirstOrDefaultAsync();
+
+                        if (evaluationDetailsPersonal == null) continue;
+
+                        var dataOfUser = await _evaluationCriteriaRepository.CriteriaToTreeWithUser(evaluationId, userId);
+
+                        if (dataOfUser != null && (dataOfUser.ListTotal == null || !dataOfUser.ListTotal.Any())) continue;
+
+                        countSheet += 1;
+
+                        string sheetName = "Sheet " + countSheet;
+
+                        var worksheet = package.Workbook.Worksheets.Add(sheetName);
+
+                        // Lấy danh sách tất cả các người dùng từ ListPoints
+                        List<PointModel>? allUsers = dataOfUser?.ListCriterias?
+                            .SelectMany(c => c.ListPoints)
+                            .GroupBy(p => p.Id)
+                            .Select(g => g.First())
+                            .ToList();
+
+                        int countColumn = 3 + allUsers!.Count;
+
+                        for (int col = 1; col <= countColumn; col++)
+                        {
+                            worksheet.Column(col).Width = 50;
+                            worksheet.Column(col).Style.WrapText = true;
+                        }
+
+                        worksheet.Cells["A1:G1000"].Clear();
+                        worksheet.Cells["A1:G1000"].Style.Font.Name = "Times New Roman";
+                        worksheet.Cells["A1:G1000"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        worksheet.Cells["A1:G1000"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                        // Thêm tiêu đề cột
+                        worksheet.Cells[1, 1].Value = unit.UnitName!; // A1
+                        worksheet.Cells[1, 1].Style.Font.Bold = true;
+                        worksheet.Cells[4, 1, 4, (4 + allUsers!.Count)].Merge = true;
+                        worksheet.Cells[4, 1].Value = dataOfUser!.EvaluationName; // A4
+                        worksheet.Cells[4, 1].Style.Font.Bold = true;
+                        worksheet.Cells[4, 1].Style.Font.Size = 14;
+                        worksheet.Cells[6, 1].Value = "Họ và tên: " + user.FullName; // A6
+                        worksheet.Cells[7, 1].Value = "Chức vụ: " + userType!.UserTypeName; // A7
+                        worksheet.Cells[1, countColumn].Value = "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM";
+                        worksheet.Cells[1, countColumn].Style.Font.Bold = true;
+                        worksheet.Cells[2, countColumn].Value = "Độc lập - Tự do - Hạnh phúc";
+                        worksheet.Cells[2, countColumn].Style.Font.Bold = true;
+                        worksheet.Cells[2, countColumn].Style.Font.UnderLine = true;
+
+
+                        worksheet.Cells[9, 1, 10, 1].Merge = true;
+                        worksheet.Cells[9, 1].Value = "STT";
+                        worksheet.Cells[9, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[9, 2, 10, 2].Merge = true;
+                        worksheet.Cells[9, 2].Value = "Nội dung đánh giá";
+                        worksheet.Cells[9, 2].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[9, 3, 10, 3].Merge = true;
+                        worksheet.Cells[9, 3].Value = "Điểm tối đa";
+                        worksheet.Cells[9, 3].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[9, 4, 9, countColumn].Merge = true;
+                        worksheet.Cells[9, 4].Value = "Kết quả đánh giá";
+
+
+                        for (int j = 1; j <= 3; j++)
+                        {
+                            worksheet.Cells[9, j].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                            worksheet.Cells[9, j].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                            worksheet.Cells[9, j].Style.Font.Name = "Times New Roman";
+                            worksheet.Cells[9, j].Style.Font.Size = 13;
+                            worksheet.Cells[9, j].Style.WrapText = true;
+
+                            worksheet.Cells[10, j].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        }
+
+
+                        for (int j = 4; j <= countColumn; j++)
+                        {
+                            worksheet.Cells[9, j].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                            worksheet.Cells[10, j].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                            worksheet.Cells[9, j].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                            worksheet.Cells[9, j].Style.Font.Name = "Times New Roman";
+                            worksheet.Cells[9, j].Style.Font.Size = 13;
+                            worksheet.Cells[9, j].Style.WrapText = true;
+                        }
+
+
+                        for (int i = 0; i < allUsers!.Count; i++)
+                        {
+                            var userGet = await _context.Users!.Where(e => e.Id == allUsers[i].UserId).FirstOrDefaultAsync();
+
+                            if (userGet != null)
+                            {
+                                worksheet.Cells[10, 4 + i].Value = userGet.FullName;
+                            }
+                            else
+                            {
+                                worksheet.Cells[10, 4 + i].Value = "";
+                            }
+
+                            worksheet.Cells[10, 4 + i].Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                            worksheet.Cells[10, 4 + i].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                            worksheet.Cells[10, 4 + i].Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                            worksheet.Cells[10, 4 + i].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                            worksheet.Cells[10, 4 + i].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                            worksheet.Cells[10, 4 + i].Style.Font.Name = "Times New Roman";
+                            worksheet.Cells[10, 4 + i].Style.Font.Size = 13;
+                            worksheet.Cells[10, 4 + i].Style.WrapText = true;
+                        }
+
+                        int row = 11;
+                        int columnStart = 4;
+                        foreach (var criteria in dataOfUser?.ListCriterias!)
+                        {
+                            row = FillCriteriaRecursiveExcel(worksheet, criteria, allUsers, columnStart, row);
+                        }
+
+                        worksheet.Cells[row, 1, row, 2].Merge = true; // Gộp ô từ A đến B
+                        worksheet.Cells[row, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[row, 2].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[row, 1].Value = "Tổng điểm";
+                        worksheet.Cells[row, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[row, 3].Value = dataOfUser?.TotalEndValue;
+                        worksheet.Cells[row, 3].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+
+                        int rowStart = 4;
+                        foreach (var p in dataOfUser?.ListTotal!)
+                        {
+                            worksheet.Cells[row, rowStart].Value = p;
+                            worksheet.Cells[row, rowStart].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                            rowStart++;
+                        }
+                        /*---------------------------------------------------------------*/
+                        row++;
+                        rowStart = 4;
+
+                        worksheet.Cells[row, 1, row, 3].Merge = true; // Gộp ô từ A đến B
+                        worksheet.Cells[row, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[row, 2].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[row, 3].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                        worksheet.Cells[row, 1].Value = "Xếp loại đánh giá";
+
+                        foreach (var p in dataOfUser?.ListTotal!)
+                        {
+                            worksheet.Cells[row, rowStart].Value = GetGradingName(p);
+                            worksheet.Cells[row, rowStart].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                            rowStart++;
+                        }
+
+
+                        /*---------------------------------------------------------------*/
+                    }
+
+                    package.SaveAs(stream);
+
+                }
+
+                byte[] excelBytes = stream.ToArray();
+
+                return File(excelBytes, MediaTypeNames.Application.Octet, "Document.xlsx");
+            }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
 
     [HttpGet("exportEvaluationDocument")]
     [Authorize]
@@ -624,7 +824,7 @@ public class AnalystController : Controller
 
             var evaluationDetailsPersonal = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == evaluationId && e.UserId == userCurrentId && e.Status >= 2).FirstOrDefaultAsync();
 
-            if (unit == null || evaluationDetailsPersonal == null && userType == null) return Ok();
+            if (unit == null || evaluationDetailsPersonal == null || userType == null) return Ok();
 
             var dataOfUser = await _evaluationCriteriaRepository.CriteriaToTreeWithUser(evaluationId, userCurrentId);
 

@@ -362,7 +362,12 @@ const HeaderCustom = ({
             </Dropdown>
           </Spin>
 
-          <Input className="header-search" placeholder="Type here..." prefix={<SearchOutlined />} />
+          <Input
+            style={{ height: 35 }}
+            className="header-search"
+            placeholder="Nhập gì đó..."
+            prefix={<SearchOutlined />}
+          />
 
           <Spin spinning={false}>
             <Space style={{ marginRight: 20 }}>

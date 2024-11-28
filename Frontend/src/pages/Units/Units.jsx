@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AiFillEdit } from "react-icons/ai";
+import { BsPersonBadge } from "react-icons/bs";
 import { FaEye } from "react-icons/fa";
 import { GrSearch } from "react-icons/gr";
 import { IoMdAddCircle } from "react-icons/io";
@@ -9,11 +10,13 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 import { Button, Card, Divider, Flex, Input, Modal, Spin, Table, Tag, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 
-import { deleteListUnit, getAllUnit } from "../../apis";
+import { deleteListUnit, getAllUnit, getAllUserInUnit } from "../../apis";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import arrayToTree from "../../utils/arrayToTree";
+import Users from "../Users/Users";
 
 import NewAndUpdateUnit from "./NewAndUpdateUnit";
+import UserInUnit from "./UserInUnit";
 
 export const renderTreeUnit = (nodes) => {
   return nodes.map((node) => {
@@ -41,10 +44,12 @@ const Units = () => {
   const { Text } = Typography;
   const { confirm } = Modal;
 
+  const [unitId, setUnitId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [units, setUnits] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
+  const [isOpenModalUserInUnit, setIsOpenModalUserInUnit] = useState(false);
 
   const hasSelected = selectedRowKeys.length > 0;
 
@@ -101,6 +106,11 @@ const Units = () => {
     setIsUserModalOpen(true);
   };
 
+  const handleButtonViewUser = async (id) => {
+    setUnitId(id);
+    setIsOpenModalUserInUnit(true);
+  };
+
   const columns = [
     {
       title: "Tên đơn vị",
@@ -123,6 +133,15 @@ const Units = () => {
       width: 200,
       render: (text, record) => (
         <Flex align="center" justify="center" gap={10}>
+          <Tooltip title="Xem người dùng có trong đơn vị này">
+            <Button
+              style={{ borderRadius: 10 }}
+              icon={<BsPersonBadge style={{ padding: 0, margin: "auto", fontSize: 15 }} />}
+              onClick={() => {
+                handleButtonViewUser(record.id);
+              }}
+            />
+          </Tooltip>
           <Tooltip title="Xem chi tiết">
             <Button
               style={{ borderRadius: 10 }}
@@ -181,17 +200,19 @@ const Units = () => {
       >
         <NewAndUpdateUnit listUnit={arrayToTree(units)} refetchApiUnit={fetchApiUnit} closeModal={setIsOpenModalAdd} />
       </Modal>
-      {/* <Modal
-        title="Thêm mới người dùng"
-        open={isAddNewModalOpen}
+      <Modal
+        style={{ top: 20 }}
+        width={1400}
+        title="Người dùng có trong đơn vị"
+        open={isOpenModalUserInUnit}
         onOk={() => {}}
         onCancel={() => {
-          setIsAddNewModalOpen(false);
+          setIsOpenModalUserInUnit(false);
         }}
         footer={null}
       >
-        <AddNewUser id={userId} />
-      </Modal> */}
+        <UserInUnit unitId={unitId} />
+      </Modal>
       <Breadcrumbs />
       <Divider />
       <Flex gap="middle" vertical>

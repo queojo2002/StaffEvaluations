@@ -1,0 +1,279 @@
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý đơn vị phòng ban:
+@startuml
+left to right direction
+
+actor Admin
+actor Manager
+
+usecase ManageDepartment as "Quản lý đơn vị/phòng ban" 
+usecase AddDepartment as "Thêm đơn vị/phòng ban"
+usecase EditDepartment as "Sửa thông tin đơn vị/phòng ban"
+usecase DeleteDepartment as "Xóa đơn vị/phòng ban"
+usecase ViewUsers as "Xem danh sách user\ntrong đơn vị/phòng ban"
+
+ManageDepartment <|-- AddDepartment : «extend»
+ManageDepartment <|-- EditDepartment : «extend»
+ManageDepartment <|-- DeleteDepartment : «extend»
+ManageDepartment <|-- ViewUsers : «extend»
+
+Admin --> ManageDepartment
+Manager --> ManageDepartment
+
+@enduml
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý vai trò:
+@startuml
+left to right direction
+
+actor "Admin" as admin
+
+usecase "Quản lý vai trò" as manageRole
+usecase "Thêm vai trò" as addRole
+usecase "Sửa vai trò" as editRole
+usecase "Xóa vai trò" as deleteRole
+usecase "Xem chi tiết vai trò" as viewRole
+
+manageRole <|-- addRole : <<extend>>
+manageRole <|-- editRole : <<extend>>
+manageRole <|-- deleteRole : <<extend>>
+manageRole <|-- viewRole : <<extend>>
+
+admin --> manageRole
+
+@enduml
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý người dùng:
+@startuml
+left to right direction
+
+actor Admin
+actor Manager
+
+usecase "Quản lý người dùng" as UC1
+usecase "Thêm người dùng" as UC2
+usecase "Sửa thông tin người dùng" as UC3
+usecase "Xóa người dùng" as UC4
+usecase "Phân quyền người dùng" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+
+Admin --> UC1
+Manager --> UC1
+
+@enduml
+
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Tổng hợp và chuyển:
+@startuml
+left to right direction
+
+actor Manager
+
+usecase "Tổng hợp và chuyển" as UC1
+usecase "Lựa chọn thông tin cần tổng hợp" as UC2
+usecase "Nhập thông tin cần chuyển" as UC3
+usecase "Chuyển thông tin" as UC4
+
+Manager --> UC1
+UC1 --> UC2 : include
+UC1 --> UC3 : include
+UC1 --> UC4 : include
+
+@enduml
+
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Thực hiện đánh giá:
+
+@startuml
+left to right direction
+
+actor User
+actor Manager
+
+usecase "Thực hiện đánh giá" as UC1
+usecase "Tự đánh giá" as UC2
+usecase "Đánh giá cấp dưới" as UC3
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+
+User --> UC1
+Manager --> UC1
+
+@enduml
+
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý danh mục tiêu chí:
+
+@startuml
+left to right direction
+
+actor Admin
+actor Manager
+
+usecase "Quản lý danh mục tiêu chí" as UC1
+usecase "Thêm tiêu chí" as UC2
+usecase "Sửa tiêu chí" as UC3
+usecase "Xóa tiêu chí" as UC4
+usecase "Xem danh sách tiêu chí" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+
+Admin --> UC1
+Manager --> UC1
+
+@enduml
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý danh mục kỳ đánh giá:
+
+@startuml
+left to right direction
+
+actor Admin
+actor Manager
+
+usecase "Quản lý danh mục kỳ đánh giá" as UC1
+usecase "Xem danh sách kỳ đánh giá" as UC2
+usecase "Thêm kỳ đánh giá" as UC3
+usecase "Sửa kỳ đánh giá" as UC4
+usecase "Xóa kỳ đánh giá" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+
+Admin --> UC1
+Manager --> UC1
+
+
+@enduml
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý danh mục thang điểm đánh giá:
+
+@startuml
+left to right direction
+
+actor Admin
+actor Manager
+
+usecase "Quản lý danh mục thang điểm đánh giá" as UC1
+usecase "Xem danh sách thang điểm đánh giá" as UC2
+usecase "Thêm thang điểm đánh giá" as UC3
+usecase "Sửa thang điểm đánh giá" as UC4
+usecase "Xóa thang điểm đánh giá" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+
+Admin --> UC1
+Manager --> UC1
+
+
+@enduml
+
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý danh mục ưu và nhược điểm đánh giá.:
+
+@startuml
+left to right direction
+
+actor Admin
+
+usecase "Quản lý danh mục ưu và nhược điểm đánh giá" as UC1
+usecase "Xem danh sách ưu và nhược điểm đánh giá" as UC2
+usecase "Thêm ưu và nhược điểm đánh giá" as UC3
+usecase "Sửa ưu và nhược điểm đánh giá" as UC4
+usecase "Xóa ưu và nhược điểm đánh giá" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+
+Admin --> UC1
+
+
+@enduml
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý danh mục nhận xét đánh giá:
+
+@startuml
+left to right direction
+
+actor Admin
+
+usecase "Quản lý danh mục nhận xét đánh giá" as UC1
+usecase "Xem danh sách nhận xét đánh giá" as UC2
+usecase "Thêm nhận xét đánh giá" as UC3
+usecase "Sửa nhận xét đánh giá" as UC4
+usecase "Xóa nhận xét đánh giá" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+
+Admin --> UC1
+
+
+@enduml
+
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý phiếu đánh giá:
+
+@startuml
+left to right direction
+
+actor Admin
+actor Manager
+
+usecase "Quản lý phiếu đánh giá" as UC1
+usecase "Xem danh sách phiếu đánh giá" as UC2
+usecase "Thêm phiếu đánh giá" as UC3
+usecase "Thêm phiếu đánh giá theo mẫu" as UC6
+usecase "Sửa phiếu đánh giá" as UC4
+usecase "Xóa phiếu đánh giá" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+UC3 <|-- UC6 : «extend» 
+
+Admin --> UC1
+Manager --> UC1
+
+@enduml
+
+
+
+=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UC Quản lý mẫu phiếu đánh giá:
+
+@startuml
+left to right direction
+
+actor Admin
+
+usecase "Quản lý mẫu phiếu đánh giá" as UC1
+usecase "Xem danh sách mẫu phiếu đánh giá" as UC2
+usecase "Thêm mẫu phiếu đánh giá" as UC3
+usecase "Sửa mẫu phiếu đánh giá" as UC4
+usecase "Xóa mẫu phiếu đánh giá" as UC5
+
+UC1 <|-- UC2 : «extend»
+UC1 <|-- UC3 : «extend»
+UC1 <|-- UC4 : «extend»
+UC1 <|-- UC5 : «extend»
+
+Admin --> UC1
+
+@enduml

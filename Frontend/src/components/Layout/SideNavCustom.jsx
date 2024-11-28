@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BiLogoGmail } from "react-icons/bi";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { Button, Menu, Spin } from "antd";
@@ -86,10 +87,10 @@ const SideNavCustom = ({ color }) => {
           <span className="icon" style={{ color }}>
             {dashboard}
           </span>
-          <h6>Need Help?</h6>
-          <p>Please check our docs</p>
+          <h6 style={{ paddingBottom: 10 }}>Cần hỗ trợ?</h6>
+          <p>Vui lòng liên hệ qua Gmail</p>
           <Button type="primary" className="ant-btn-sm ant-btn-block">
-            DOCUMENTATION
+            ducln339@gmail.com
           </Button>
         </div>
       </div>

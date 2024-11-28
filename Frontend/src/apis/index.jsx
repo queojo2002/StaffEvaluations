@@ -29,6 +29,10 @@ export const getAllUser = async () => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/user/getAll`);
 };
 
+export const getAllUserInUnit = async (unitId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/user/getListUserInUnit?unitId=${unitId}`);
+};
+
 export const getAllUserType = async () => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/userType/getAll`);
 };
@@ -498,6 +502,12 @@ export const exportPdfOfUser = async (evaluationId) => {
 
 export const exportExcelOfUser = async (evaluationId) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/analyst/exportExcelOfUser?evaluationId=${evaluationId}`, {
+    responseType: "blob"
+  });
+};
+
+export const exportUserEvaluationDataToExcel = async (userId) => {
+  return await apiInstance.get(`${BACKEND_API}/api/v1/analyst/exportUserEvaluationDataToExcel?userId=${userId}`, {
     responseType: "blob"
   });
 };

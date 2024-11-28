@@ -36,6 +36,16 @@ public class UserController : Controller
         return Ok(get);
     }
 
+    [HttpGet("getListUserInUnit")]
+    [Authorize]
+    public async Task<IActionResult> GetListUserInUnit(Guid unitId)
+    {
+        var get = await _userRepository.GetAllOfUnit(unitId);
+
+        return Ok(get);
+    }
+
+
     [HttpGet("{id}")]
     [Authorize]
     public async Task<IActionResult> GetById(Guid id)
