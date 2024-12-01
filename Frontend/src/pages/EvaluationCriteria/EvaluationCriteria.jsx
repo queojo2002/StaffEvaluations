@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AiFillEdit } from "react-icons/ai";
+import { CgAdd } from "react-icons/cg";
 import { FaEye } from "react-icons/fa";
 import { GrSearch } from "react-icons/gr";
 import { IoMdAddCircle } from "react-icons/io";
@@ -9,6 +10,7 @@ import { ExclamationCircleFilled } from "@ant-design/icons";
 import { Button, Card, Divider, Flex, Input, Modal, Spin, Table, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 
+import AddCriteriaChild from "./AddCriteriaChild";
 import NewAndUpdateEvaluationCriteria, { renderTreeCriteria } from "./NewAndUpdateEvaluationCriteria";
 
 import { getAllCategoryCriteria, getAllCategoryRating, getAllUnit, removeCategoryCriteria } from "~/apis";
@@ -25,6 +27,8 @@ const EvaluationCriteria = () => {
   const [dataCategoryRating, setDataCategoryRating] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isOpenModalAdd, setIsOpenModalAdd] = useState(false);
+  const [isOpenModalAddChild, setIsOpenModalAddChild] = useState(false);
+
   const [id, setId] = useState(null);
 
   const hasSelected = selectedRowKeys.length > 0;
@@ -85,12 +89,35 @@ const EvaluationCriteria = () => {
     });
   };
 
-  const handleButtonViewDetail = (id) => {
-    setUserId(id);
-    setIsUserModalOpen(true);
+  const handleAddCriteriaChild = (id) => {
+    setId(id);
+    setIsOpenModalAddChild(true);
   };
 
   const columns = [
+    {
+      key: "stt",
+      dataIndex: "stt",
+      align: "center",
+      width: 100,
+      render: (text) => (
+        <div
+          style={{
+            display: "inline-block",
+            padding: "4px 8px",
+            borderRadius: "8px",
+            backgroundColor: "#E0F7FA",
+            color: "#00796B",
+            fontWeight: "bold",
+            fontSize: "13px",
+            minWidth: "20px",
+            textAlign: "center"
+          }}
+        >
+          {text}
+        </div>
+      )
+    },
     {
       title: "Tên tiêu chí đánh giá",
       dataIndex: "criteriaName",
@@ -129,12 +156,12 @@ const EvaluationCriteria = () => {
       width: "8%",
       render: (text, record) => (
         <Flex align="center" justify="center" gap={10}>
-          <Tooltip title="Xem chi tiết">
+          <Tooltip title="Thêm tiêu chí con">
             <Button
               style={{ borderRadius: 10 }}
-              icon={<FaEye style={{ padding: 0, margin: "auto", fontSize: 15 }} />}
+              icon={<CgAdd style={{ padding: 0, margin: "auto", fontSize: 15 }} />}
               onClick={() => {
-                handleButtonViewDetail(record.id);
+                handleAddCriteriaChild(record.id);
               }}
             />
           </Tooltip>
@@ -167,7 +194,8 @@ const EvaluationCriteria = () => {
     dataSource: datas ? renderTreeCriteria(arrayToTree(datas)) : null,
     pagination: { pageSize: 10, showSizeChanger: false },
     bordered: true,
-    size: "middle"
+    size: "middle",
+    expandIconColumnIndex: 3
   };
 
   useEffect(() => {
@@ -193,6 +221,27 @@ const EvaluationCriteria = () => {
           listCategoryRating={dataCategoryRating}
           refetchApi={fetchApiGetAll}
           closeModal={setIsOpenModalAdd}
+          id={id}
+        />
+      </Modal>
+
+      <Modal
+        title="Thêm tiêu chí con"
+        open={isOpenModalAddChild}
+        onOk={() => {}}
+        onCancel={() => {
+          setIsOpenModalAddChild(false);
+        }}
+        footer={null}
+        style={{ top: 20 }}
+        width={800}
+      >
+        <AddCriteriaChild
+          listUnit={arrayToTree(dataUnit)}
+          listCategoryCriteria={arrayToTree(datas)}
+          listCategoryRating={dataCategoryRating}
+          refetchApi={fetchApiGetAll}
+          closeModal={setIsOpenModalAddChild}
           id={id}
         />
       </Modal>

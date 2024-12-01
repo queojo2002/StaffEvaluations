@@ -111,6 +111,7 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
 
     public async Task<PagedApiResponse<CategoryCriteriaModel>> InsertAsync(CategoryCriteriaModel model)
     {
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -120,6 +121,32 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
                 model.Id = Guid.NewGuid();
             }
 
+            if (model.ParentId != null && model.ParentId.HasValue)
+            {
+                int criteriaLevel = await GetCriteriaLevelAsync(model.ParentId.Value);
+
+                if (criteriaLevel > 3)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Không thể thêm tiêu chí. Tiêu chí cấp độ 3 đã đạt giới hạn.");
+                }
+                else if (criteriaLevel == 3 && !model.CategoryRatingId.HasValue)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Nếu tiêu chí ở cấp độ 3 thì bắt buộc phải có thang điểm đánh giá.");
+                }
+
+                var childData = await _context.CategoryCriterias.Where(e => e.Id == model.ParentId).FirstOrDefaultAsync();
+
+                if (childData == null)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Không tồn tại tiêu chí cha.");
+                }
+                else if (childData.UnitId != model.UnitId)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Tiêu chí cha và tiêu chí con phải cùng 1 đơn vị.");
+                }
+            }
+
+
             var newCriterion = new CategoryCriteria
             {
                 Id = model.Id,
@@ -127,7 +154,7 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
                 CategoryRatingId = model.CategoryRatingId,
                 UnitId = model.UnitId,
                 CriteriaName = model.CriteriaName,
-                IsDistinct = model.IsDistinct,
+                IsDistinct = false,
                 IsDeleted = false,
                 UpdatedAt = DateTime.Now
             };
@@ -142,7 +169,7 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
         {
             await transaction.RollbackAsync();
 
-            return new ApiResult().Failure<CategoryCriteriaModel>($"Lỗi khi thêm tiêu chí: {ex.Message}");
+            return new ApiResult().Failure<CategoryCriteriaModel>($"Có lỗi khi thực hiện thêm tiêu chí, vui lòng liên hệ quản trị viên.");
         }
     }
 
@@ -152,11 +179,44 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
 
         try
         {
+
             var criterionToUpdate = await _context.CategoryCriterias.FindAsync(model.Id);
 
             if (criterionToUpdate == null || criterionToUpdate.IsDeleted)
             {
                 return new ApiResult().Failure<CategoryCriteriaModel>("Không tìm thấy tiêu chí hoặc tiêu chí đã bị xóa.");
+            }
+
+            if (model.ParentId != null && model.ParentId.HasValue)
+            {
+                int criteriaLevel = await GetCriteriaLevelAsync(model.ParentId.Value);
+
+                if (criteriaLevel > 3)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Không thể thêm tiêu chí. Tiêu chí cấp độ 3 đã đạt giới hạn.");
+                }
+                else if (criteriaLevel == 3 && !model.CategoryRatingId.HasValue)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Nếu tiêu chí ở cấp độ 3 thì bắt buộc phải có thang điểm đánh giá.");
+                }
+
+                var childData = await _context.CategoryCriterias.Where(e => e.Id == model.ParentId).FirstOrDefaultAsync();
+
+                if (childData == null)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Không tồn tại tiêu chí cha.");
+                }
+                else if (childData.UnitId != model.UnitId)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Tiêu chí cha và tiêu chí con phải cùng 1 đơn vị.");
+                }
+            }
+
+            var checkEc = await _context.EvaluationCriterias.Where(e => e.CategoryCriteriaId == model.Id).FirstOrDefaultAsync();
+
+            if (checkEc != null)
+            {
+                return new ApiResult().Failure<CategoryCriteriaModel>("Tiêu chí: " + criterionToUpdate.CriteriaName + " <br> Hiện đang được sử dụng nên không thể chỉnh sửa.");
             }
 
             criterionToUpdate.CriteriaName = model.CriteriaName;
@@ -185,6 +245,23 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
 
         try
         {
+            foreach (var categoryCriteriaId in ids)
+            {
+                var check = await _context.CategoryCriterias.Where(e => e.Id == categoryCriteriaId).FirstOrDefaultAsync();
+
+                if (check == null)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Danh sách xoá của bạn có tiêu chí không tồn tại trong hệ thống.");
+                }
+
+                var checkEc = await _context.EvaluationCriterias.Where(e => e.CategoryCriteriaId == categoryCriteriaId).FirstOrDefaultAsync();
+
+                if (checkEc != null)
+                {
+                    return new ApiResult().Failure<CategoryCriteriaModel>("Tiêu chí: " + check.CriteriaName + " <br> Hiện đang được sử dụng nên không thể xoá.");
+                }
+            }
+
             var criteriaToDelete = await _context.CategoryCriterias
                 .Where(c => ids.Contains(c.Id) && !c.IsDeleted)
                 .ToListAsync();
@@ -213,5 +290,35 @@ public class CategoryCriteriaRepository : ICategoryCriteriaRepository
         }
     }
 
+
+
+
+    private async Task<int> GetCriteriaLevelAsync(Guid parentId)
+    {
+        if (parentId == Guid.Empty)
+        {
+            return 1;
+        }
+
+        int level = 1;
+        Guid? currentParentId = parentId;
+
+        // Duyệt qua các cấp cha và tính cấp độ
+        while (currentParentId.HasValue)
+        {
+            // Tìm tiêu chí cha
+            var parentCriterion = await _context.CategoryCriterias.Where(c => c.Id == currentParentId.Value).FirstOrDefaultAsync();
+
+            if (parentCriterion == null)
+            {
+                break; // Nếu không tìm thấy tiêu chí cha thì dừng
+            }
+
+            currentParentId = parentCriterion.ParentId; // Chuyển sang tiêu chí cha của tiêu chí hiện tại
+            level++; // Tăng cấp độ
+        }
+
+        return level;
+    }
 }
 

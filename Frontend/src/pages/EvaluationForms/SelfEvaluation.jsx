@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { EditOutlined, EyeOutlined, SwapOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Divider, Row, Space, Spin, Table, Tag } from "antd";
+import { Button, Card, Col, Divider, Modal, Row, Space, Spin, Table, Tag } from "antd";
 import dayjs from "dayjs";
 
 import EvaluationDetailsUser from "./EvaluationDetailsUser";
+import EvaluationDetailsUserCustom from "./EvaluationDetailsUserCustom";
 
 import { getEvaluationOfUser } from "~/apis";
 import Breadcrumbs from "~/components/Breadcrumbs";
@@ -199,6 +200,14 @@ const SelfEvaluation = () => {
 
   return (
     <Spin spinning={loading}>
+      {/* <EvaluationDetailsUserCustom
+        refetchApi={fetchApiGetAll}
+        isOpen={isOpenDrawer}
+        setIsOpen={setIsOpenDrawer}
+        evaluationId={id}
+        status={status}
+      /> */}
+
       <EvaluationDetailsUser
         refetchApi={fetchApiGetAll}
         isOpen={isOpenDrawer}
@@ -206,6 +215,7 @@ const SelfEvaluation = () => {
         evaluationId={id}
         status={status}
       />
+
       <Breadcrumbs />
       <Divider />
       <Row gutter={[24, 0]}>

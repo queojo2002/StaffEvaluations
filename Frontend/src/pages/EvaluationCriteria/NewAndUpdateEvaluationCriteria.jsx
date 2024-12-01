@@ -7,8 +7,10 @@ import { renderTreeUnit } from "../Units/Units";
 
 import { getCategoryCriteriaById, insertCategoryCriteria, updateCategoryCriteria } from "~/apis";
 
-export const renderTreeCriteria = (nodes) => {
-  return nodes.map((node) => {
+export const renderTreeCriteria = (nodes, parentStt = "") => {
+  return nodes.map((node, index) => {
+    const currentStt = parentStt ? `${parentStt}.${index + 1}` : `${index + 1}`;
+
     const nodeData = {
       title: <Tag> {node.criteriaName}</Tag>,
       id: node.id,
@@ -20,13 +22,14 @@ export const renderTreeCriteria = (nodes) => {
       unitName: node.unitName,
       parentId: node.parentId,
       updatedAt: node.updatedAt,
-      order: node.order
+      order: node.order,
+      stt: currentStt
     };
 
     if (node.children && node.children.length > 0) {
       return {
         ...nodeData,
-        children: renderTreeCriteria(node.children)
+        children: renderTreeCriteria(node.children, currentStt)
       };
     }
     return nodeData;
@@ -75,6 +78,9 @@ const NewAndUpdateEvaluationCriteria = (props) => {
         <Form layout={"vertical"} form={formRef} onFinish={onFinish}>
           <Form.Item name={"id"} hidden>
             <Input disabled={true} />
+          </Form.Item>
+          <Form.Item name={"isDistinct"} hidden>
+            <Input disabled={true} defaultValue={false} />
           </Form.Item>
 
           <Row gutter={16}>
@@ -134,15 +140,6 @@ const NewAndUpdateEvaluationCriteria = (props) => {
                   treeData={renderTreeUnit(listUnit)}
                   style={{ height: 40 }}
                 />
-              </Form.Item>
-            </Col>
-
-            <Col span={24}>
-              <Form.Item name={"isDistinct"} label="Chỉ tính điểm 1 tiêu chí con" initialValue={false}>
-                <Radio.Group optionType="button">
-                  <Radio value={true}>Bật</Radio>
-                  <Radio value={false}>Tắt</Radio>
-                </Radio.Group>
               </Form.Item>
             </Col>
 

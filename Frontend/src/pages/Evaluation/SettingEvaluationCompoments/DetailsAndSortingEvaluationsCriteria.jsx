@@ -126,7 +126,6 @@ const DetailsAndSortingEvaluationsCriteria = (props) => {
         </div>
       )
     },
-
     {
       title: "Tên tiêu chí đánh giá",
       dataIndex: "criteriaName",
