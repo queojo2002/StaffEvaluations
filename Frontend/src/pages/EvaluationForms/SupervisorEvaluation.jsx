@@ -4,6 +4,7 @@ import { Button, Card, Col, Divider, Row, Space, Spin, Table, Tag } from "antd";
 import dayjs from "dayjs";
 
 import EvaluationDetailsSupervisor from "./EvaluationDetailsSupervisor";
+import EvaluationDetailsSupervisorCustom from "./EvaluationDetailsSupervisorCustom";
 
 import { getEvaluationOfSupervisor } from "~/apis";
 import Breadcrumbs from "~/components/Breadcrumbs";
@@ -210,7 +211,15 @@ const SupervisorEvaluation = () => {
 
   return (
     <Spin spinning={loading}>
-      <EvaluationDetailsSupervisor
+      {/* <EvaluationDetailsSupervisor
+        refetchApi={fetchApiGetAll}
+        isOpen={isOpenDrawer}
+        setIsOpen={setIsOpenDrawer}
+        evaluationId={id}
+        userId={idUser}
+        status={status}
+      /> */}
+      <EvaluationDetailsSupervisorCustom
         refetchApi={fetchApiGetAll}
         isOpen={isOpenDrawer}
         setIsOpen={setIsOpenDrawer}

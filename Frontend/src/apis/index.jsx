@@ -334,9 +334,21 @@ export const getListCriteriaInEvaluationsOfUser = async (id) => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationCriteria/getListCriteriaInEvaluationsOfUser/${id}`);
 };
 
+export const getListCriteriaInEvaluationsOfUserCustom = async (id) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluationCriteria/getListCriteriaInEvaluationsOfUserCustom/${id}`
+  );
+};
+
 export const getListCriteriaInEvaluationsOfSupervisor = async (evaluationId, idUser) => {
   return await apiInstance.get(
     `${BACKEND_API}/api/v1/evaluationCriteria/getListCriteriaInEvaluationsOfSupervisor?evaluationId=${evaluationId}&idUser=${idUser}`
+  );
+};
+
+export const getListCriteriaInEvaluationsOfSupervisorCustom = async (evaluationId, idUser) => {
+  return await apiInstance.get(
+    `${BACKEND_API}/api/v1/evaluationCriteria/getListCriteriaInEvaluationsOfSupervisorCustom?evaluationId=${evaluationId}&idUser=${idUser}`
   );
 };
 

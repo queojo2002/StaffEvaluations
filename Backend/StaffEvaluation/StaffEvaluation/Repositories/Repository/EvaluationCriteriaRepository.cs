@@ -64,6 +64,161 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
         return new Pagination().HandleGetByIdRespond(result);
     }
 
+    public async Task<PagedApiResponse<EvaluationDetailsModel>> GetListCriteriaInEvaluationsOfUserCustom(Guid evaluationId, Guid userId)
+    {
+        var evaluation = await _context.Evaluations.Where(e => e.Id == evaluationId && !e.IsDeleted).SingleOrDefaultAsync();
+
+        if (evaluation == null)
+        {
+            return new ApiResult().Failure<EvaluationDetailsModel>("Phiếu đánh giá không tồn tại trên hệ thống.");
+        }
+
+        var evaluationCriterias = await _context.EvaluationCriterias.Where(ec => ec.EvaluationId == evaluationId && !ec.IsDeleted).OrderBy(ec => ec.Sort).ToListAsync();
+
+        if (evaluationCriterias == null || evaluationCriterias.Count == 0)
+        {
+            return new ApiResult().Failure<EvaluationDetailsModel>("Phiếu đánh giá này hiện tại chưa có tiêu chí nên không thể đánh giá.");
+        }
+
+        var supervisors = await _context.EvaluationUsers.Where(eu => eu.EvaluationId == evaluationId && eu.Type == 2).OrderBy(eu => eu.Sort).ToListAsync();
+
+        if (supervisors == null || supervisors.Count == 0)
+        {
+            return new ApiResult().Failure<EvaluationDetailsModel>("Phiếu đánh giá này hiện tại chưa giám sát viên nên không thể đánh giá.");
+        }
+
+        List<CriteriaDataModel> criteriaDataModels = new List<CriteriaDataModel>();
+
+        foreach (var item in evaluationCriterias)
+        {
+            string criteriaName = "";
+            Guid? parentId = null;
+            int endValue = 0;
+
+            var categoryCriteria = await _context.CategoryCriterias.Where(cc => cc.Id == item.CategoryCriteriaId).FirstOrDefaultAsync();
+
+            if (categoryCriteria == null)
+            {
+                return new ApiResult().Failure<EvaluationDetailsModel>("Có lỗi khi lấy dữ liệu phiếu đánh giá này.");
+            }
+
+            criteriaName = categoryCriteria.CriteriaName ?? "";
+
+            parentId = categoryCriteria.ParentId ?? null;
+
+            if (categoryCriteria.CategoryRatingId != null)
+            {
+                var categoryRating = await _context.CategoryRatings.Where(cr => cr.Id == categoryCriteria.CategoryRatingId && !cr.IsDeleted).FirstOrDefaultAsync();
+
+                if (categoryRating != null)
+                {
+                    endValue = categoryRating.EndValue;
+                }
+            }
+
+            var edp = await _context.EvaluationDetailsPersonals.Where(edp =>
+                                                edp.UserId == userId &&
+                                                edp.EvaluationId == evaluationId &&
+                                                edp.EvaluationCriteriaId == item.Id).FirstOrDefaultAsync();
+
+
+            List<EvaluationScoreModel> scores = new List<EvaluationScoreModel>();
+
+
+            foreach (var supervisor in supervisors)
+            {
+                int assessmentValueSupervisor = 0;
+
+                if (edp != null)
+                {
+                    var eds = await _context.EvaluationDetailsSupervisors.Where(eds =>
+                                            eds.EvaluationDetailsPersonalId == edp.Id &&
+                                            eds.UserSupervisorId == supervisor.UserId &&
+                                            eds.Status >= 2).FirstOrDefaultAsync();
+
+                    if (eds != null)
+                    {
+                        assessmentValueSupervisor = eds.AssessmentValueSupervisor;
+                    }
+                }
+
+                var user = await _context.Users!.Where(e => e.Id == supervisor.UserId).FirstOrDefaultAsync();
+
+                var userType = await _context.UserTypes!.Where(e => e.Id == user!.UserTypeId).FirstOrDefaultAsync();
+
+                EvaluationScoreModel score = new EvaluationScoreModel()
+                {
+                    UserId = supervisor.UserId,
+                    FullName = user!.FullName,
+                    UserTypeName = userType!.UserTypeName,
+                    Score = assessmentValueSupervisor,
+                };
+
+                scores.Add(score);
+            }
+
+
+
+            CriteriaDataModel criteriaData = new CriteriaDataModel()
+            {
+                STT = null,
+                Id = item.CategoryCriteriaId,
+                ParentId = parentId,
+                EvaluationCriteriaId = item.Id,
+                CriteriaName = criteriaName,
+                Sort = item.Sort,
+                EndValue = endValue,
+                AssessmentResults = scores,
+                AssessmentValue = edp == null ? 0 : edp.AssessmentValue
+            };
+
+
+            criteriaDataModels.Add(criteriaData);
+        }
+
+        var map = new Dictionary<string, CriteriaDataModel>();
+
+        List<CriteriaDataModel> menuTree = new List<CriteriaDataModel>();
+
+        foreach (var item in criteriaDataModels)
+        {
+            var key = item.Id.ToString() ?? string.Empty;
+
+            map[key] = item;
+
+            var parentId = item.ParentId?.ToString();
+
+            if (string.IsNullOrEmpty(parentId) || !map.ContainsKey(parentId))
+            {
+                menuTree.Add(item);
+            }
+            else
+            {
+                var parentItem = map[parentId];
+
+                parentItem.Children.Add(item);
+            }
+        }
+
+        for (int i = 0; i < menuTree.Count; i++)
+        {
+            AssignSTTCustom(menuTree[i], (i + 1).ToString());
+        }
+
+        menuTree = CalculateEndValue(menuTree);
+
+        menuTree = CalculateTotalSupervisor(menuTree);
+
+        var result = new EvaluationDetailsModel
+        {
+            EvaluationId = evaluation.Id,
+            EvaluationName = evaluation.EvaluationName,
+            CriteriaData = menuTree,
+        };
+
+        return new Pagination().HandleGetByIdRespond(result);
+    }
+
     public async Task<PagedApiResponse<EvaluationCriteriaResponseModel>> GetListCriteriaInEvaluationsOfSupervisor(Guid evaluationId, Guid userId, Guid userCurrentId)
     {
         var datas = await GetListCriteriaInEvaluationsOfUser(evaluationId, userId);
@@ -97,6 +252,215 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
         return new Pagination().HandleGetByIdRespond(result);
 
     }
+
+    public async Task<PagedApiResponse<EvaluationDetailsModel>> GetListCriteriaInEvaluationsOfSupervisorCustom(Guid evaluationId, Guid userId, Guid userCurrentId)
+    {
+        var evaluation = await _context.Evaluations.Where(e => e.Id == evaluationId && !e.IsDeleted).SingleOrDefaultAsync();
+
+        if (evaluation == null)
+        {
+            return new ApiResult().Failure<EvaluationDetailsModel>("Phiếu đánh giá không tồn tại trên hệ thống.");
+        }
+
+        var evaluationCriterias = await _context.EvaluationCriterias.Where(ec => ec.EvaluationId == evaluationId && !ec.IsDeleted).OrderBy(ec => ec.Sort).ToListAsync();
+
+        if (evaluationCriterias == null || evaluationCriterias.Count == 0)
+        {
+            return new ApiResult().Failure<EvaluationDetailsModel>("Phiếu đánh giá này hiện tại chưa có tiêu chí nên không thể đánh giá.");
+        }
+
+        var supervisors = await _context.EvaluationUsers.Where(eu => eu.EvaluationId == evaluationId && eu.Type == 2).OrderBy(eu => eu.Sort).ToListAsync();
+
+        if (supervisors == null || supervisors.Count == 0)
+        {
+            return new ApiResult().Failure<EvaluationDetailsModel>("Phiếu đánh giá này hiện tại chưa giám sát viên nên không thể đánh giá.");
+        }
+
+        var currentUserIndex = supervisors.FindIndex(supervisor => supervisor.UserId == userCurrentId); // Lấy vị trí đánh giá của người dùng hiện tại
+
+        var userEdp = await _context.Users!.Where(e => e.Id == userId && !e.IsDeleted).FirstOrDefaultAsync();
+
+        var userTypeEdp = await _context.UserTypes!.Where(e => e.Id == userEdp!.UserTypeId).FirstOrDefaultAsync();
+
+        List<CriteriaDataModel> criteriaDataModels = new List<CriteriaDataModel>();
+
+        foreach (var item in evaluationCriterias)
+        {
+            string criteriaName = "";
+            Guid? parentId = null;
+            int endValue = 0;
+
+            var categoryCriteria = await _context.CategoryCriterias.Where(cc => cc.Id == item.CategoryCriteriaId).FirstOrDefaultAsync();
+
+            if (categoryCriteria == null)
+            {
+                return new ApiResult().Failure<EvaluationDetailsModel>("Có lỗi khi lấy dữ liệu phiếu đánh giá này.");
+            }
+
+            criteriaName = categoryCriteria.CriteriaName ?? "";
+
+            parentId = categoryCriteria.ParentId ?? null;
+
+            if (categoryCriteria.CategoryRatingId != null)
+            {
+                var categoryRating = await _context.CategoryRatings.Where(cr => cr.Id == categoryCriteria.CategoryRatingId && !cr.IsDeleted).FirstOrDefaultAsync();
+
+                if (categoryRating != null)
+                {
+                    endValue = categoryRating.EndValue;
+                }
+            }
+            List<EvaluationScoreModel> scores = new List<EvaluationScoreModel>();
+
+
+            var edp = await _context.EvaluationDetailsPersonals.Where(edp =>
+                                                edp.UserId == userId &&
+                                                edp.EvaluationId == evaluationId &&
+                                                edp.EvaluationCriteriaId == item.Id &&
+                                                edp.Status >= 2).FirstOrDefaultAsync();
+
+            /*
+                Add theo thứ tự: User -> Supervisor
+                1. User
+             */
+
+            scores.Add(new EvaluationScoreModel()
+            {
+                UserId = userId,
+                FullName = userEdp!.FullName,
+                UserTypeName = userTypeEdp!.UserTypeName,
+                Score = edp == null ? 0 : edp.AssessmentValue,
+            });
+
+            /*
+                Add theo thứ tự: User -> Supervisor
+                2. Supervisor
+             */
+
+            for (int i = 0; i < supervisors.Count; i++)
+            {
+
+                /*
+                 Ví dụ: currentUserIndex = 0 - Trưởng bộ môn
+                        i = 0 là sẽ continue do Người giám sát hiện tại cũng thực hiện phiếu này nên họ cần được 1 giám sát viên cấp cao hơn đánh giá
+                        i = 1 là Hiệu trưởng thì sẽ break khỏi vòng lặp không chạy nữa vì hiệu trưởng cấp cao hơn
+                 */
+                if (i > currentUserIndex)
+                {
+                    break;
+                }
+                else if (i == currentUserIndex)
+                {
+                    continue;
+                }
+
+                int assessmentValueSupervisor = 0;
+
+                if (edp != null)
+                {
+                    var eds = await _context.EvaluationDetailsSupervisors.Where(eds =>
+                                            eds.EvaluationDetailsPersonalId == edp.Id &&
+                                            eds.UserSupervisorId == supervisors[i].UserId &&
+                                            eds.Status >= 2).FirstOrDefaultAsync();
+
+                    if (eds != null)
+                    {
+                        assessmentValueSupervisor = eds.AssessmentValueSupervisor;
+                    }
+                }
+
+                var user = await _context.Users!.Where(e => e.Id == supervisors[i].UserId && !e.IsDeleted).FirstOrDefaultAsync();
+
+                var userType = await _context.UserTypes!.Where(e => e.Id == user!.UserTypeId).FirstOrDefaultAsync();
+
+                EvaluationScoreModel score = new EvaluationScoreModel()
+                {
+                    UserId = supervisors[i].UserId,
+                    FullName = user!.FullName,
+                    UserTypeName = userType!.UserTypeName,
+                    Score = assessmentValueSupervisor,
+                };
+
+                scores.Add(score);
+            }
+
+
+
+
+            int assessmentValue = 0;
+
+            if (edp != null)
+            {
+                var edsInUserCurrent = await _context.EvaluationDetailsSupervisors.Where(eds =>
+                                            eds.EvaluationDetailsPersonalId == edp.Id &&
+                                            eds.UserSupervisorId == userCurrentId).FirstOrDefaultAsync();
+
+                if (edsInUserCurrent != null) assessmentValue = edsInUserCurrent.AssessmentValueSupervisor;
+            }
+
+
+
+            CriteriaDataModel criteriaData = new CriteriaDataModel()
+            {
+                STT = null,
+                Id = item.CategoryCriteriaId,
+                ParentId = parentId,
+                EvaluationCriteriaId = item.Id,
+                EvaluationDetailPersonalId = edp != null ? edp.Id : null,
+                CriteriaName = criteriaName,
+                Sort = item.Sort,
+                EndValue = endValue,
+                AssessmentResults = scores,
+                AssessmentValue = assessmentValue
+            };
+
+
+            criteriaDataModels.Add(criteriaData);
+        }
+
+        var map = new Dictionary<string, CriteriaDataModel>();
+
+        List<CriteriaDataModel> menuTree = new List<CriteriaDataModel>();
+
+        foreach (var item in criteriaDataModels)
+        {
+            var key = item.Id.ToString() ?? string.Empty;
+
+            map[key] = item;
+
+            var parentId = item.ParentId?.ToString();
+
+            if (string.IsNullOrEmpty(parentId) || !map.ContainsKey(parentId))
+            {
+                menuTree.Add(item);
+            }
+            else
+            {
+                var parentItem = map[parentId];
+
+                parentItem.Children.Add(item);
+            }
+        }
+
+        for (int i = 0; i < menuTree.Count; i++)
+        {
+            AssignSTTCustom(menuTree[i], (i + 1).ToString());
+        }
+
+        menuTree = CalculateEndValue(menuTree);
+
+        menuTree = CalculateTotalSupervisor(menuTree);
+
+        var result = new EvaluationDetailsModel
+        {
+            EvaluationId = evaluation.Id,
+            EvaluationName = evaluation.EvaluationName,
+            CriteriaData = menuTree,
+        };
+
+        return new Pagination().HandleGetByIdRespond(result);
+    }
+
 
     public Task<PagedApiResponse<EvaluationCriteriaModel>> GetAllPagedAsync(int pageNumber, int pageSize)
     {
@@ -514,116 +878,6 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
 
         return response;
     }
-
-    public async Task<CriteriaTreeResponseModel> CriteriaToTreeWithSupervisor(Guid evaluationId, Guid userCurrentId, Guid userId)
-    {
-
-        var response = new CriteriaTreeResponseModel();
-
-        var evaluations = await _context.Evaluations.Where(e => e.Id == evaluationId).FirstOrDefaultAsync();
-
-        if (evaluations == null)
-        {
-            return response;
-        }
-        else
-        {
-            response.EvaluationId = evaluations.Id;
-            response.EvaluationName = evaluations.EvaluationName;
-        }
-
-        var datas = await (from ec in _context.EvaluationCriterias
-                           join cc in _context.CategoryCriterias on ec.CategoryCriteriaId equals cc.Id into ccGroup
-                           from cc in ccGroup.DefaultIfEmpty()
-                           join u in _context.Units! on cc.UnitId equals u.Id into uGroup
-                           from u in uGroup.DefaultIfEmpty()
-                           join cr in _context.CategoryRatings on cc.CategoryRatingId equals cr.Id into crGroup
-                           from cr in crGroup.DefaultIfEmpty()
-                           where !ec.IsDeleted &&
-                                 !cc.IsDeleted &&
-                                 !u.IsDeleted &&
-                                  ec.EvaluationId == evaluationId
-                           orderby ec.Sort
-                           select new CriteriaTreeCustomModel
-                           {
-                               CategoryCriteriaId = cc.Id,
-                               EvaluationDetailPersonalId = null,
-                               EvaluationCriteriaId = ec.Id,
-                               ParentId = cc.ParentId,
-                               STT = null,
-                               CriteriaName = cc.CriteriaName,
-                               IsDistinct = cc.IsDistinct,
-                               EndValue = cr != null ? cr.EndValue : 0
-                           }).ToListAsync();
-
-        var map = new Dictionary<string, CriteriaTreeCustomModel>();
-
-        // Tạo map với Id là khóa
-        foreach (var item in datas)
-        {
-            var key = item.CategoryCriteriaId?.ToString() ?? string.Empty;
-            map[key] = item;
-        }
-
-        // Tạo danh sách cho cây menu
-        var menuTree = new List<CriteriaTreeCustomModel>();
-
-        // Duyệt qua các phần tử để xây dựng cây
-        foreach (var item in datas)
-        {
-            var parentId = item.ParentId?.ToString();
-
-            if (string.IsNullOrEmpty(parentId) || !map.ContainsKey(parentId))
-            {
-                // Phần tử cấp cao nhất hoặc không có cha hợp lệ
-                menuTree.Add(item);
-            }
-            else
-            {
-                // Phần tử con
-                var parentItem = map[parentId];
-                parentItem.Children.Add(item);
-            }
-        }
-
-        // Xử lý điểm cho từng tiêu chí
-
-        var getEvaluationsDetailsPersonal = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == evaluationId).ToListAsync();
-
-        var getEvaluationsDetailsSupervisor = await _context.EvaluationDetailsSupervisors.Where(e => e.EvaluationId == evaluationId).ToListAsync();
-
-        var getEvaluationsSupervisor = await _context.EvaluationUsers.Where(e => e.EvaluationId == evaluationId && e.Type == 2).OrderBy(e => e.Sort).ToListAsync();
-
-        var totalPoints = new Dictionary<string, int?>();
-
-        var endValueTotals = new Dictionary<Guid, int>();
-
-
-        for (int i = 0; i < menuTree.Count; i++)
-        {
-            // Gán STT cho các phần tử trong cây
-            AssignSTTNew(menuTree[i], (i + 1).ToString());
-
-            // Xử lý điểm cho từng tiêu chí
-            ProcessPointSupervisor(menuTree[i], userCurrentId, userId, getEvaluationsDetailsPersonal, getEvaluationsDetailsSupervisor, getEvaluationsSupervisor);
-
-            // Cộng dồn điểm cho các nút lá
-            AggregateLeafPoints(menuTree[i], totalPoints);
-
-        }
-
-        response.ListCriterias = menuTree;
-
-        response.TotalEndValue = CalculateTotalEndValue(menuTree);
-
-        foreach (var item in totalPoints)
-        {
-            response.ListTotal.Add(item.Value ?? 0);
-        }
-
-        return response;
-    }
-
     private void AssignSTT(CriteriaOfUserModel model, string parentSTT)
     {
         model.STT = parentSTT;
@@ -752,101 +1006,6 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
 
         }
     }
-    private void ProcessPointSupervisor(CriteriaTreeCustomModel listCriteriaTree, Guid userCurrentId, Guid userId, List<EvaluationDetailsPersonal> getEvaluationsDetailsPersonal, List<EvaluationDetailsSupervisor> getEvaluationsDetailsSupervisor, List<EvaluationUser> getEvaluationsSupervisor)
-    {
-
-        if (listCriteriaTree.Children == null || listCriteriaTree.Children.Count == 0)
-        {
-
-            var listPoint = new List<PointModel>();
-
-            var evaluationsDetailsPersonal = getEvaluationsDetailsPersonal.FirstOrDefault(x => x.EvaluationCriteriaId == listCriteriaTree.EvaluationCriteriaId && x.UserId == userId && x.Status >= 1);
-
-            if (evaluationsDetailsPersonal == null)
-            {
-                return;
-            }
-
-            listPoint.Add(new PointModel
-            {
-                Id = userId + "_User",
-                UserId = userId,
-                AssessmentValue = evaluationsDetailsPersonal?.AssessmentValue ?? 0
-            }); // Lấy điểm cá nhân của từng tiêu chí
-
-            var indexCurrentUserId = getEvaluationsSupervisor.FindIndex(u => u.UserId == userCurrentId);
-
-            int i = 0;
-
-            foreach (var supervisor in getEvaluationsSupervisor)
-            {
-                var evaluationsDetailsSupervisor = getEvaluationsDetailsSupervisor.FirstOrDefault(x => x.EvaluationDetailsPersonalId == evaluationsDetailsPersonal!.Id && x.UserSupervisorId == supervisor.UserId && x.Status == 2);
-
-                if (i > indexCurrentUserId)
-                {
-                    break;
-                }
-
-                if (evaluationsDetailsSupervisor != null)
-                {
-                    listPoint.Add(new PointModel
-                    {
-                        Id = supervisor.UserId + "_Supervisor",
-                        UserId = supervisor.UserId,
-                        AssessmentValue = evaluationsDetailsSupervisor.AssessmentValueSupervisor
-                    }); // Lấy điểm của từng người giám sát
-                }
-                i++;
-            }
-
-            listCriteriaTree.ListPoints = listPoint;
-
-        }
-        else
-        {
-            int totalEndValue = 0;
-
-            foreach (var item in listCriteriaTree.Children)
-            {
-                ProcessPointSupervisor(item, userCurrentId, userId, getEvaluationsDetailsPersonal, getEvaluationsDetailsSupervisor, getEvaluationsSupervisor);
-                totalEndValue += item.EndValue;
-
-            }
-
-
-            // Tổng hợp điểm từ các con
-            var aggregatedPoints = new List<PointModel>();
-            foreach (var child in listCriteriaTree.Children)
-            {
-                if (child.ListPoints != null)
-                {
-                    foreach (var point in child.ListPoints)
-                    {
-                        var existingPoint = aggregatedPoints.FirstOrDefault(ap => ap.Id == point.Id);
-
-                        if (existingPoint != null)
-                        {
-                            existingPoint.AssessmentValue += point.AssessmentValue;
-                        }
-                        else
-                        {
-                            aggregatedPoints.Add(new PointModel
-                            {
-                                Id = point.Id,
-                                UserId = point.UserId,
-                                AssessmentValue = point.AssessmentValue
-                            });
-                        }
-                    }
-                }
-            }
-
-            listCriteriaTree.ListPoints = aggregatedPoints;
-
-            listCriteriaTree.EndValue = totalEndValue;
-
-        }
-    }
     private void AggregateLeafPoints(CriteriaTreeCustomModel node, Dictionary<string, int?> totalPoints)
     {
         if (node.Children == null || node.Children.Count == 0)
@@ -910,6 +1069,74 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
 
         return totalEndValue;
     }
+
+
+
+    #region CUSTOM
+    private void AssignSTTCustom(CriteriaDataModel model, string parentSTT)
+    {
+        model.STT = parentSTT;
+
+        for (int i = 0; i < model.Children.Count; i++)
+        {
+            var childSTT = $"{parentSTT}.{i + 1}";
+            AssignSTTCustom(model.Children[i], childSTT);
+        }
+    }
+
+    private static List<CriteriaDataModel> CalculateEndValue(List<CriteriaDataModel> criteria)
+    {
+        foreach (var item in criteria)
+        {
+            if (item.Children != null && item.Children.Count > 0)
+            {
+                // Gọi đệ quy để tính toán cho các tiêu chí con
+                var updatedChildren = CalculateEndValue(item.Children);
+
+                // Cập nhật danh sách tiêu chí con
+                item.Children = updatedChildren;
+
+                // Tính tổng EndValue của các tiêu chí con
+                item.EndValue = updatedChildren.Sum(child => child.EndValue);
+            }
+            else
+            {
+                // Nếu không có con, EndValue giữ nguyên
+                item.EndValue = item.EndValue;
+            }
+        }
+
+        return criteria;
+    }
+
+    private static List<CriteriaDataModel> CalculateTotalSupervisor(List<CriteriaDataModel> criteria)
+    {
+        foreach (var item in criteria)
+        {
+            // Nếu tiêu chí có con, tính tổng điểm supervisor cho các con trước
+            if (item.Children != null && item.Children.Count > 0)
+            {
+                var updatedChildren = CalculateTotalSupervisor(item.Children);
+                item.Children = updatedChildren;
+
+                // Tính tổng điểm của supervisor từ các con
+                if (item.AssessmentResults != null && item.AssessmentResults.Count > 0)
+                {
+                    foreach (var supervisor in item.AssessmentResults)
+                    {
+                        // Tính tổng điểm cho từng supervisor từ các con
+                        supervisor.Score = updatedChildren
+                            .Where(child => child.AssessmentResults.Any(s => s.UserId == supervisor.UserId))
+                            .Sum(child => child.AssessmentResults.First(s => s.UserId == supervisor.UserId).Score);
+                    }
+                }
+            }
+        }
+
+        return criteria;
+    }
+    #endregion
+
 
 }
 

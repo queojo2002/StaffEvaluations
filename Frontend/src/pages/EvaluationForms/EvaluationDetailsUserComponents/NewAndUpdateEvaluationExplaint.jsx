@@ -143,7 +143,6 @@ const NewAndUpdateEvaluationExplaint = (props) => {
   ];
 
   useEffect(() => {
-    console.log(userIds);
     if (evaluationId && categoryCriteriaId && userIds) {
       fetchUserTypeById(evaluationId, categoryCriteriaId, userIds);
     }

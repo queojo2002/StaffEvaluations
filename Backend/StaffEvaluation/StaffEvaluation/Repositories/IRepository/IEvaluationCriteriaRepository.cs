@@ -9,10 +9,11 @@ public interface IEvaluationCriteriaRepository : IRepository<EvaluationCriteriaM
 {
     Task<EvaluationCriteriaResponseModel> CriteriaToTree(EvaluationCriteriaResponseModel model, Guid userCurrentId, int type);
     Task<CriteriaTreeResponseModel> CriteriaToTreeWithUser(Guid evaluationId, Guid userCurrentId);
-    Task<CriteriaTreeResponseModel> CriteriaToTreeWithSupervisor(Guid evaluationId, Guid userCurrentId, Guid userId);
     Task<PagedApiResponse<CategoryCriteriaModel>> GetListCriteriaByIdEvaluation(Guid idEvaluation);
     Task<PagedApiResponse<EvaluationCriteriaResponseModel>> GetListCriteriaInEvaluationsOfUser(Guid evaluationId, Guid userId);
+    Task<PagedApiResponse<EvaluationDetailsModel>> GetListCriteriaInEvaluationsOfUserCustom(Guid evaluationId, Guid userId);
     Task<PagedApiResponse<EvaluationCriteriaResponseModel>> GetListCriteriaInEvaluationsOfSupervisor(Guid evaluationId, Guid userId, Guid userCurrentId);
+    Task<PagedApiResponse<EvaluationDetailsModel>> GetListCriteriaInEvaluationsOfSupervisorCustom(Guid evaluationId, Guid userId, Guid userCurrentId);
     Task<PagedApiResponse<EvaluationCriteriaModel>> InsertAndRemoveListAsync(EvaluationCriteriaAddPayload entity);
     Task<PagedApiResponse<CategoryCriteriaModel>> UpdateSortListAsync(EvaluationCriteriaUpdateSortPayload model);
 }

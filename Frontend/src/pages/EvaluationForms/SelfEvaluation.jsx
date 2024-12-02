@@ -200,21 +200,21 @@ const SelfEvaluation = () => {
 
   return (
     <Spin spinning={loading}>
-      {/* <EvaluationDetailsUserCustom
-        refetchApi={fetchApiGetAll}
-        isOpen={isOpenDrawer}
-        setIsOpen={setIsOpenDrawer}
-        evaluationId={id}
-        status={status}
-      /> */}
-
-      <EvaluationDetailsUser
+      <EvaluationDetailsUserCustom
         refetchApi={fetchApiGetAll}
         isOpen={isOpenDrawer}
         setIsOpen={setIsOpenDrawer}
         evaluationId={id}
         status={status}
       />
+
+      {/* <EvaluationDetailsUser
+        refetchApi={fetchApiGetAll}
+        isOpen={isOpenDrawer}
+        setIsOpen={setIsOpenDrawer}
+        evaluationId={id}
+        status={status}
+      /> */}
 
       <Breadcrumbs />
       <Divider />

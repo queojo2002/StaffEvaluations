@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { CloseOutlined, EditOutlined, SaveOutlined, SendOutlined } from "@ant-design/icons";
-import { Button, Col, Drawer, Input, Modal, Row, Space, Table, Tabs, Tag, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { CloseOutlined, EditOutlined, RightCircleFilled, SaveOutlined, SendOutlined } from "@ant-design/icons";
+import { Button, Col, Drawer, Dropdown, Input, Modal, Row, Space, Table, Tabs, Tag, Typography } from "antd";
 
+import SupervisorEvaluationResult from "./EvaluationDetailsSupervisorComponents/SupervisorEvaluationResult";
 import EvaluationDetailsUserPrint from "./EvaluationDetailsUserComponents/EvaluationDetailsUserPrint";
 import EvaluationSubmissionConfirmation from "./EvaluationDetailsUserComponents/EvaluationSubmissionConfirmation";
 import ManagerExclusiveSection from "./EvaluationDetailsUserComponents/ManagerExclusiveSection";
@@ -11,61 +12,62 @@ import SelfReviewAndQualityRating from "./EvaluationDetailsUserComponents/SelfRe
 
 import {
   checkIsManagementMember,
+  checkIsManager,
   getAllCategoryComment,
   getAllCategoryProsCons,
+  getListCriteriaInEvaluationsOfSupervisorCustom,
   getListCriteriaInEvaluationsOfUserCustom,
-  insertEvaluationDetailsPersonal
+  insertEvaluationDetailsPersonal,
+  insertEvaluationDetailsSupervisor
 } from "~/apis";
 import { calculateTotalAssessmentValue } from "~/utils/calculateTotalAssessmentValue";
 import { getGradingName } from "~/utils/getGradingName";
 import { openNotificationTopLeft } from "~/utils/openNotification";
 
-const EvaluationDetailsUserCustom = (props) => {
-  const { isOpen, setIsOpen, evaluationId, status, refetchApi } = props;
+const EvaluationDetailsSupervisorCustom = (props) => {
+  const { isOpen, setIsOpen, evaluationId, userId, status, refetchApi } = props;
+
   const { Text } = Typography;
 
-  const typingTimeoutRef = useRef(null);
-  const advantageRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [criteriaData, setCriteriaData] = useState([]);
   const [supervisors, setSupervisors] = useState([]);
-  const [dataProsCons, setDataProsCons] = useState([]);
   const [isPrincipal, setIsPrincipal] = useState(false);
-  const [bindingAddReview, setBindingAddReview] = useState("");
+  const [itemsDropdown, setItemsDropdown] = useState([]);
   const [userIds, setUserIds] = useState([]);
   const [file, setFile] = useState(null);
-  const [activeTabKey, setActiveTabKey] = useState("1");
+  const [activeTabKey, setActiveTabKey] = useState("2");
   const [openSendEvaluation, setOpenSendEvaluation] = useState(false);
-  const [bindingAdvantage, setBindingAdvantage] = useState("");
-  const [bindingDisAdvantage, setBindingDisAdvantage] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [isSuggestAdvantageOpen, setIsSuggestAdvantageOpen] = useState(false);
-  const [isSuggestDisAdvantageOpen, setIsSuggestDisAdvantageOpen] = useState(false);
-  const [selectedAdvantages, setSelectedAdvantages] = useState("");
-  const [selectedDisadvantages, setSelectedDisadvantages] = useState("");
-  const [bindingKetQuaHoatDongCoQuan, setBindingKetQuaHoatDongCoQuan] = useState("");
-  const [bindingNangLucLanhDaoQuanLy, setBindingNangLucLanhDaoQuanLy] = useState("");
-  const [bindingNangLucTapHopDoanKet, setBindingNangLucTapHopDoanKet] = useState("");
   const [isOpenNewAndUpdateEvaluationExplaint, setIsOpenNewAndUpdateEvaluationExplaint] = useState(false);
-  const [isOpenEvaluationDetailsUserPrint, setIsOpenEvaluationDetailsUserPrint] = useState(false);
   const [nameCriteriaDisplay, setNameCriteriaDisplay] = useState("");
   const [explaintCategoryCriteriaId, setExplaintCategoryCriteriaId] = useState(null);
+  const [bindingNhanXetUuKhuyetDiem, setBindingNhanXetUuKhuyetDiem] = useState("");
+  const [bindingNhanDinhChieuHuongPhatTrien, setBindingNhanDinhChieuHuongPhatTrien] = useState("");
 
-  const fetchApiGetAll = async (evaluationId) => {
+  const fetchApiGetAll = async (evaluationId, userId) => {
     setLoading(true);
     try {
-      const [data1, data2, data3, data4] = await Promise.all([
-        getListCriteriaInEvaluationsOfUserCustom(evaluationId),
-        getAllCategoryProsCons(),
-        getAllCategoryComment(),
-        checkIsManagementMember()
+      const [data1, data2] = await Promise.all([
+        getListCriteriaInEvaluationsOfSupervisorCustom(evaluationId, userId),
+        checkIsManager(evaluationId)
       ]);
       setCriteriaData(data1.data.criteriaData);
       setSupervisors(data1.data.criteriaData[0].assessmentResults);
       setUserIds(data1.data.criteriaData[0].assessmentResults.map((supervisor) => supervisor.userId));
-      setDataProsCons(data2.dataList);
-      setBindingAddReview(getReview(data3.dataList));
-      if (data4.data !== null) {
+      setItemsDropdown(
+        data1.data.criteriaData[0].assessmentResults.map((supervisor, index) => ({
+          key: index.toString(), // Sử dụng index làm key
+          label: (
+            <span>
+              Sao chép theo điểm của <span style={{ color: "red" }}>{supervisor.fullName}</span>
+            </span>
+          ),
+          onClick: () => {
+            copyValues(index); // Gọi hàm với tham số index
+          }
+        }))
+      );
+      if (data2.data !== null) {
         setIsPrincipal(true);
       }
     } catch (error) {
@@ -140,8 +142,8 @@ const EvaluationDetailsUserCustom = (props) => {
         // console.log("Phần tử không có con, thêm vào flatData:", item);
         flatData.push({
           id: item.id,
-          evaluationCriteriaId: item.evaluationCriteriaId,
-          assessmentValue: item.assessmentValue
+          evaluationDetailPersonalId: item.evaluationDetailPersonalId,
+          assessmentValueSupervisor: item.assessmentValue
         });
       }
 
@@ -180,80 +182,6 @@ const EvaluationDetailsUserCustom = (props) => {
     return total;
   };
 
-  const getReview = (dataReview) => {
-    const combinedReviews = dataReview.map((item) => {
-      const sortTitle = item.sort + ". " + item.title || "";
-      const content = item.content || "";
-      return `${sortTitle}\n${content}`;
-    });
-    return combinedReviews.join("\n");
-  };
-
-  const getSuggestions = (inputValue, type) => {
-    const allSuggestions = dataProsCons?.filter((item) => item.isPros === (type === "advantages" ? true : false)) || [];
-    return allSuggestions
-      .filter((item) => item.content && item.content.toLowerCase().includes(inputValue.toLowerCase()))
-      .map((item) => ({
-        value: item.content || "",
-        label: item.content || ""
-      }));
-  };
-
-  const handleSuggestionDisplay = (e, type) => {
-    const inputValue = e.target.value;
-    const listLine = inputValue.split("\n").filter((x) => x !== "");
-    const filterSuggestion = listLine.length > 0 ? listLine[listLine.length - 1] : inputValue;
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      if (type === "advantages") {
-        setSelectedAdvantages(inputValue);
-        const newSuggestions = getSuggestions(filterSuggestion.trim().replace("-", ""), type);
-        if (newSuggestions.length > 0) {
-          setSuggestions(newSuggestions);
-          setIsSuggestAdvantageOpen(true);
-          setIsSuggestDisAdvantageOpen(false);
-        } else {
-          setIsSuggestAdvantageOpen(false);
-          setIsSuggestDisAdvantageOpen(false);
-        }
-      } else {
-        setSelectedDisadvantages(inputValue);
-        const newSuggestions = getSuggestions(filterSuggestion.trim().replace("-", ""), type);
-        setSuggestions(newSuggestions);
-        setIsSuggestDisAdvantageOpen(newSuggestions.length > 0);
-        setIsSuggestAdvantageOpen(false);
-      }
-    }, 500);
-  };
-
-  const handleSelectSuggestion = (option, type) => {
-    if (type === "advantages") {
-      setSelectedAdvantages((prev) => {
-        const listLine = prev
-          .split("\n")
-          .filter((x) => x !== "")
-          .slice(0, -1);
-        const newValue = listLine.length > 0 ? `${listLine.join("\n")}\n - ${option.label}\n` : ` - ${option.label}\n`;
-        return newValue;
-      });
-      setIsSuggestAdvantageOpen(false);
-    } else {
-      setSelectedDisadvantages((prev) => {
-        const listLine = prev
-          .split("\n")
-          .filter((x) => x !== "")
-          .slice(0, -1);
-        const newValue = listLine.length > 0 ? `${listLine.join("\n")}\n - ${option.label}\n` : ` - ${option.label}\n`;
-        return newValue;
-      });
-      setIsSuggestDisAdvantageOpen(false);
-    }
-  };
-
   const onFinish = async (isSave) => {
     setLoading(true);
 
@@ -261,24 +189,9 @@ const EvaluationDetailsUserCustom = (props) => {
 
     let formattedValues = {};
     if (!isSave) {
-      if (!selectedAdvantages || !selectedDisadvantages) {
+      if (isPrincipal === true && (!bindingNhanXetUuKhuyetDiem || !bindingNhanDinhChieuHuongPhatTrien)) {
         setLoading(false);
-        openNotificationTopLeft("warning", "Cảnh báo", "Vui lòng điền đầy đủ thông tin ưu, nhược điểm!");
-        return;
-      } else if (!bindingAddReview) {
-        setLoading(false);
-        openNotificationTopLeft("warning", "Cảnh báo", "Vui lòng điền đầy đủ thông tin kết quả tự nhận xét đánh giá!");
-        return;
-      } else if (
-        isPrincipal === true &&
-        (!bindingKetQuaHoatDongCoQuan || !bindingNangLucLanhDaoQuanLy || !bindingNangLucTapHopDoanKet)
-      ) {
-        setLoading(false);
-        openNotificationTopLeft(
-          "warning",
-          "Cảnh báo",
-          "Vui lòng điền đầy đủ thông tin Phần dành riêng cho Viên chức quản lý!"
-        );
+        openNotificationTopLeft("warning", "Cảnh báo", "Vui lòng điền đầy đủ thông tin!");
         return;
       }
 
@@ -291,33 +204,27 @@ const EvaluationDetailsUserCustom = (props) => {
       formattedValues = {
         evaluationId: evaluationId,
         evaluationStatus: 2,
+        userId: userId,
         userCriteriaEvaluations: values,
         evaluationDetails: {
-          advantages: selectedAdvantages,
-          disAdvantages: selectedDisadvantages,
-          addReviews: bindingAddReview,
-          ketQuaHoatDongCoQuan: bindingKetQuaHoatDongCoQuan,
-          nangLucLanhDaoQuanLy: bindingNangLucLanhDaoQuanLy,
-          nangLucTapHopDoanKet: bindingNangLucTapHopDoanKet
+          nhanXetUuKhuyetDiem: bindingNhanXetUuKhuyetDiem,
+          nhanDinhChieuHuongPhatTrien: bindingNhanDinhChieuHuongPhatTrien
         }
       };
     } else {
       formattedValues = {
         evaluationId: evaluationId,
         evaluationStatus: 1,
+        userId: userId,
         userCriteriaEvaluations: values,
         evaluationDetails: {
-          advantages: null,
-          disAdvantages: null,
-          addReviews: null,
-          ketQuaHoatDongCoQuan: null,
-          nangLucLanhDaoQuanLy: null,
-          nangLucTapHopDoanKet: null
+          nhanXetUuKhuyetDiem: null,
+          nhanDinhChieuHuongPhatTrien: null
         }
       };
     }
 
-    const res = await insertEvaluationDetailsPersonal(formattedValues, file);
+    const res = await insertEvaluationDetailsSupervisor(formattedValues, file);
 
     if (res.isSuccess) {
       refetchApi();
@@ -422,8 +329,9 @@ const EvaluationDetailsUserCustom = (props) => {
         </Tag>
       )
     },
+    ...supervisorColumns,
     {
-      title: <div style={{ fontSize: 14 }}>Điểm tự đánh giá</div>,
+      title: <div style={{ fontSize: 14 }}>Điểm cấp trên đánh giá</div>,
       key: "assessmentValue",
       width: 150,
       render: (_, record) =>
@@ -478,7 +386,6 @@ const EvaluationDetailsUserCustom = (props) => {
           />
         )
     },
-    ...supervisorColumns,
     {
       title: <div style={{ fontSize: 14 }}>Giải trình</div>,
       dataIndex: "id",
@@ -501,7 +408,7 @@ const EvaluationDetailsUserCustom = (props) => {
   ];
 
   const propsTable = {
-    rowKey: (record) => record.id,
+    rowKey: (record) => (record.evaluationDetailPersonalId === null ? record.id : record.evaluationDetailPersonalId),
     loading: loading,
     columns: columns.map((item) => ({
       align: "center",
@@ -521,6 +428,7 @@ const EvaluationDetailsUserCustom = (props) => {
           <Table.Summary.Cell index={0} colSpan={2}>
             <div style={{ fontWeight: "bold", textAlign: "right", fontSize: 16 }}>Tổng điểm:</div>
           </Table.Summary.Cell>
+
           <Table.Summary.Cell index={1} colSpan={1}>
             <Tag
               color="green"
@@ -538,23 +446,7 @@ const EvaluationDetailsUserCustom = (props) => {
               {calculateTotalEndValue(criteriaData)}
             </Tag>
           </Table.Summary.Cell>
-          <Table.Summary.Cell index={2} colSpan={1}>
-            <Tag
-              color="green"
-              style={{
-                width: "100%",
-                textAlign: "center",
-                height: 40,
-                fontSize: 16,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: "bold"
-              }}
-            >
-              {calculateTotalAssessmentValue(criteriaData)}
-            </Tag>
-          </Table.Summary.Cell>
+
           {supervisors.map((item, index) => {
             const total = calculateTotalAssessmentValueSupervisor(criteriaData, index);
             return (
@@ -577,15 +469,10 @@ const EvaluationDetailsUserCustom = (props) => {
               </Table.Summary.Cell>
             );
           })}
-        </Table.Summary.Row>
 
-        <Table.Summary.Row style={{ height: 40 }}>
-          <Table.Summary.Cell index={0} colSpan={2}>
-            <div style={{ fontWeight: "bold", textAlign: "right", fontSize: 16 }}>Xếp loại: </div>
-          </Table.Summary.Cell>
-          <Table.Summary.Cell index={0} colSpan={2}>
+          <Table.Summary.Cell index={2} colSpan={1}>
             <Tag
-              color={getGradingName(calculateTotalAssessmentValue(criteriaData)).color}
+              color="green"
               style={{
                 width: "100%",
                 textAlign: "center",
@@ -597,9 +484,34 @@ const EvaluationDetailsUserCustom = (props) => {
                 fontWeight: "bold"
               }}
             >
-              {getGradingName(calculateTotalAssessmentValue(criteriaData)).name}
+              {calculateTotalAssessmentValue(criteriaData)}
             </Tag>
           </Table.Summary.Cell>
+        </Table.Summary.Row>
+
+        <Table.Summary.Row style={{ height: 40 }}>
+          <Table.Summary.Cell index={0} colSpan={2}>
+            <div style={{ fontWeight: "bold", textAlign: "right", fontSize: 16 }}>Xếp loại: </div>
+          </Table.Summary.Cell>
+
+          <Table.Summary.Cell index={0} colSpan={1}>
+            <Tag
+              color={getGradingName(100).color}
+              style={{
+                width: "100%",
+                textAlign: "center",
+                height: 40,
+                fontSize: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold"
+              }}
+            >
+              {getGradingName(100).name}
+            </Tag>
+          </Table.Summary.Cell>
+
           {supervisors.map((item, index) => {
             const total = calculateTotalAssessmentValueSupervisor(criteriaData, index);
             return (
@@ -622,6 +534,24 @@ const EvaluationDetailsUserCustom = (props) => {
               </Table.Summary.Cell>
             );
           })}
+
+          <Table.Summary.Cell index={0} colSpan={1}>
+            <Tag
+              color={getGradingName(calculateTotalAssessmentValue(criteriaData)).color}
+              style={{
+                width: "100%",
+                textAlign: "center",
+                height: 40,
+                fontSize: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold"
+              }}
+            >
+              {getGradingName(calculateTotalAssessmentValue(criteriaData)).name}
+            </Tag>
+          </Table.Summary.Cell>
         </Table.Summary.Row>
       </>
     )
@@ -630,54 +560,51 @@ const EvaluationDetailsUserCustom = (props) => {
   const items = [
     {
       key: "1",
-      label: `KẾT QUẢ TỰ ĐÁNH GIÁ`,
-      children: <SelfEvaluationResults bindingAddReview={bindingAddReview} setBindingAddReview={setBindingAddReview} />
-    },
-    {
-      key: "2",
-      label: `TỰ NHẬN XÉT, XẾP LOẠI CHẤT LƯỢNG`,
+      label: `KẾT QUẢ ĐÁNH GIÁ, XẾP LOẠI CHẤT LƯỢNG CÁN BỘ VIÊN CHỨC`,
       children: (
-        <SelfReviewAndQualityRating
-          suggestions={suggestions}
-          advantageRef={advantageRef}
-          bindingDisAdvantage={bindingDisAdvantage}
-          bindingAdvantage={bindingAdvantage}
-          selectedDisadvantages={selectedDisadvantages}
-          selectedAdvantages={selectedAdvantages}
-          isSuggestDisAdvantageOpen={isSuggestDisAdvantageOpen}
-          isSuggestAdvantageOpen={isSuggestAdvantageOpen}
-          handleTextAreaChange={handleSuggestionDisplay}
-          handleSelectSuggestion={handleSelectSuggestion}
-        />
-      )
-    },
-    {
-      key: "3",
-      label: `PHẦN DÀNH RIÊNG CHO VIÊN CHỨC QUẢN LÝ`,
-      children: (
-        <ManagerExclusiveSection
-          bindingKetQuaHoatDongCoQuan={bindingKetQuaHoatDongCoQuan}
-          setBindingKetQuaHoatDongCoQuan={setBindingKetQuaHoatDongCoQuan}
-          bindingNangLucLanhDaoQuanLy={bindingNangLucLanhDaoQuanLy}
-          setBindingNangLucLanhDaoQuanLy={setBindingNangLucLanhDaoQuanLy}
-          bindingNangLucTapHopDoanKet={bindingNangLucTapHopDoanKet}
-          setBindingNangLucTapHopDoanKet={setBindingNangLucTapHopDoanKet}
+        <SupervisorEvaluationResult
+          bindingNhanXetUuKhuyetDiem={bindingNhanXetUuKhuyetDiem}
+          bindingNhanDinhChieuHuongPhatTrien={bindingNhanDinhChieuHuongPhatTrien}
+          setBindingNhanXetUuKhuyetDiem={setBindingNhanXetUuKhuyetDiem}
+          setBindingNhanDinhChieuHuongPhatTrien={setBindingNhanDinhChieuHuongPhatTrien}
         />
       ),
       disabled: !isPrincipal
     },
     {
-      key: "4",
+      key: "2",
       label: `XÁC NHẬN GỬI ĐÁNH GIÁ`,
       children: <EvaluationSubmissionConfirmation setFile={setFile} />
     }
   ];
 
+  const copyValues = (indexCopy) => {
+    // Hàm đệ quy cập nhật giá trị
+    const updateCriteria = (criteriaData) =>
+      criteriaData.map((criteria) => {
+        // Tạo bản sao của tiêu chí để không thay đổi dữ liệu gốc
+        const updatedCriteria = { ...criteria };
+
+        // Xử lý gán giá trị dựa trên chỉ mục
+        updatedCriteria.assessmentValue = criteria.assessmentResults[indexCopy]?.score || 0;
+
+        // Đệ quy xử lý danh sách con nếu có
+        if (criteria.children?.length > 0) {
+          updatedCriteria.children = updateCriteria(criteria.children);
+        }
+
+        return updatedCriteria;
+      });
+
+    // Cập nhật dữ liệu thông qua setState
+    setCriteriaData((prevCriteriaData) => updateCriteria(prevCriteriaData));
+  };
+
   useEffect(() => {
-    if (evaluationId) {
-      fetchApiGetAll(evaluationId);
+    if (evaluationId && userId) {
+      fetchApiGetAll(evaluationId, userId);
     }
-  }, [evaluationId]);
+  }, [evaluationId, userId]);
 
   return (
     <>
@@ -693,22 +620,27 @@ const EvaluationDetailsUserCustom = (props) => {
         confirmLoading={loading}
         open={openSendEvaluation}
         onOk={
-          activeTabKey === "4"
+          activeTabKey === "2"
             ? () => {
                 onFinish(0);
               }
             : () => {}
         }
         onCancel={() => {
-          setActiveTabKey("1");
+          setActiveTabKey(!isPrincipal ? "2" : "1");
           setOpenSendEvaluation(false);
         }}
-        footer={activeTabKey === "4" ? undefined : null}
+        footer={activeTabKey === "2" ? undefined : null}
         style={{
           top: 20
         }}
       >
-        <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} items={items} />
+        <Tabs
+          defaultActiveKey={isPrincipal ? "1" : "2"}
+          activeKey={activeTabKey}
+          onChange={setActiveTabKey}
+          items={items}
+        />
       </Modal>
 
       <Modal
@@ -732,29 +664,10 @@ const EvaluationDetailsUserCustom = (props) => {
           closeModal={setIsOpenNewAndUpdateEvaluationExplaint}
           categoryCriteriaId={explaintCategoryCriteriaId}
           evaluationId={evaluationId}
+          userId={userId}
           userIds={userIds}
-          type={1}
+          type={2}
         />
-      </Modal>
-
-      <Modal
-        title={
-          <Typography.Title level={5} style={{ marginBottom: 10, paddingTop: 10, paddingBottom: 10 }}>
-            Danh sách các mẫu in
-          </Typography.Title>
-        }
-        width={600}
-        confirmLoading={loading}
-        open={isOpenEvaluationDetailsUserPrint}
-        onCancel={() => {
-          setIsOpenEvaluationDetailsUserPrint(false);
-        }}
-        style={{
-          top: 20
-        }}
-        footer={null}
-      >
-        <EvaluationDetailsUserPrint closeModal={setIsOpenEvaluationDetailsUserPrint} evaluationId={evaluationId} />
       </Modal>
 
       <Drawer
@@ -826,8 +739,24 @@ const EvaluationDetailsUserCustom = (props) => {
                 borderColor: "1890ff"
               }}
             >
-              Gửi đánh giá
+              Ký duyệt
             </Button>
+
+            <Dropdown
+              menu={{
+                items: itemsDropdown
+              }}
+              trigger={["click"]}
+            >
+              <Button
+                hidden={status === 2 ? true : false}
+                icon={<RightCircleFilled />}
+                style={{ fontSize: 14, width: 160, height: 40, color: "white", backgroundColor: "#01643c" }}
+              >
+                Sao chép điểm
+              </Button>
+            </Dropdown>
+
             <Button
               hidden={status === 2 ? true : false}
               loading={loading}
@@ -866,4 +795,4 @@ const EvaluationDetailsUserCustom = (props) => {
   );
 };
 
-export default EvaluationDetailsUserCustom;
+export default EvaluationDetailsSupervisorCustom;

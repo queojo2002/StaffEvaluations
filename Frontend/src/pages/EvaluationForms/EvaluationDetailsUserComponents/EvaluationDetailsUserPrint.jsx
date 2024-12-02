@@ -3,6 +3,7 @@ import { DownloadOutlined } from "@ant-design/icons";
 import { Button, Spin, Tabs } from "antd";
 
 import { exportEvaluationDocument, exportExcelOfUser, exportPdfOfUser } from "~/apis";
+import { openNotificationTopLeft } from "~/utils/openNotification";
 const EvaluationDetailsUserPrint = (props) => {
   const { refetchApi, closeModal, evaluationId } = props;
   const [activeKey, setActiveKey] = useState("1");
@@ -48,7 +49,7 @@ const EvaluationDetailsUserPrint = (props) => {
       const res = await exportEvaluationDocument(evaluationId, numberTemplate, 1);
 
       if (res?.size === 0) {
-        alert("Mẫu đánh giá phải gửi cấp phê duyệt mới được in ấn.");
+        openNotificationTopLeft("warning", "Thông báo", "Mẫu đánh giá phải gửi cấp phê duyệt mới được in ấn.");
         setLoadingButton(false);
         return;
       }
@@ -86,7 +87,7 @@ const EvaluationDetailsUserPrint = (props) => {
       }
 
       if (!res || res.size === 0) {
-        alert("Vui lòng ký duyệt trước khi xuất báo cáo. Hoặc báo cáo chưa có dữ liệu.");
+        openNotificationTopLeft("warning", "Thông báo", "Thực hiện đánh giá xong mới được in ấn.");
         setLoadingButton(false);
         return;
       }
@@ -112,7 +113,7 @@ const EvaluationDetailsUserPrint = (props) => {
       const res = await exportExcelOfUser(evaluationId);
 
       if (!res || res.size === 0) {
-        alert("Vui lòng ký duyệt trước khi xuất báo cáo. Hoặc báo cáo chưa có dữ liệu.");
+        openNotificationTopLeft("warning", "Thông báo", "Thực hiện đánh giá xong mới được in ấn.");
         setLoadingButton(false);
         return;
       }

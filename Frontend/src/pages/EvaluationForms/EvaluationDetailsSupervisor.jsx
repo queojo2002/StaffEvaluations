@@ -6,7 +6,12 @@ import SupervisorEvaluationResult from "./EvaluationDetailsSupervisorComponents/
 import EvaluationSubmissionConfirmation from "./EvaluationDetailsUserComponents/EvaluationSubmissionConfirmation";
 import NewAndUpdateEvaluationExplaint from "./EvaluationDetailsUserComponents/NewAndUpdateEvaluationExplaint";
 
-import { checkIsManager, getListCriteriaInEvaluationsOfSupervisor, insertEvaluationDetailsSupervisor } from "~/apis";
+import {
+  checkIsManager,
+  getListCriteriaInEvaluationsOfSupervisor,
+  getListCriteriaInEvaluationsOfSupervisorCustom,
+  insertEvaluationDetailsSupervisor
+} from "~/apis";
 import { calculateTotalAssessmentValue } from "~/utils/calculateTotalAssessmentValue";
 import { calculateTotalAssessmentValueDynamic } from "~/utils/calculateTotalAssessmentValueDynamic";
 import { getTotalAssessmentValueSupervisorDynamic } from "~/utils/getTotalAssessmentValueSupervisorDynamic";
@@ -33,9 +38,10 @@ const EvaluationDetailsSupervisor = (props) => {
   const fetchApiGetAll = async (evaluationId, userId) => {
     setLoading(true);
     try {
-      const [data1, data2] = await Promise.all([
+      const [data1, data2, data3] = await Promise.all([
         getListCriteriaInEvaluationsOfSupervisor(evaluationId, userId),
-        checkIsManager(evaluationId)
+        checkIsManager(evaluationId),
+        getListCriteriaInEvaluationsOfSupervisorCustom(evaluationId, userId)
       ]);
       setData(data1.data.criteriaList);
       if (data1.data.supervisorList !== null) {

@@ -4,7 +4,7 @@ export const calculateTotalAssessmentValue = (children) => {
     if (child.children && child.children.length > 0) {
       total += calculateTotalAssessmentValue(child.children);
     } else {
-      total += child.assessmentValue || child.startValue;
+      total += child.assessmentValue || 0;
     }
   });
   return total;

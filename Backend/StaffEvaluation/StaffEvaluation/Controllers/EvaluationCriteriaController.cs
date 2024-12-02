@@ -58,6 +58,22 @@ public class EvaluationCriteriaController : Controller
         return Ok(data);
     }
 
+    [HttpGet("getListCriteriaInEvaluationsOfUserCustom/{id}")]
+    [Authorize]
+    public async Task<IActionResult> GetListCriteriaInEvaluationsOfUserCustom(Guid id)
+    {
+
+        var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        var data = await _evaluationCriteriaRepository.GetListCriteriaInEvaluationsOfUserCustom(id, userId);
+
+        return Ok(data);
+    }
+
+
+
+
+
     [HttpGet("getListCriteriaInEvaluationsOfSupervisor")]
     [Authorize]
     public async Task<IActionResult> GetListCriteriaInEvaluationsOfSupervisor(Guid evaluationId, Guid idUser)
@@ -76,6 +92,17 @@ public class EvaluationCriteriaController : Controller
         return Ok(data);
     }
 
+
+    [HttpGet("getListCriteriaInEvaluationsOfSupervisorCustom")]
+    [Authorize]
+    public async Task<IActionResult> GetListCriteriaInEvaluationsOfSupervisorCustom(Guid evaluationId, Guid idUser)
+    {
+        var userId = Guid.Parse(HttpContext.User.FindFirst("Id")!.Value);
+
+        var data = await _evaluationCriteriaRepository.GetListCriteriaInEvaluationsOfSupervisorCustom(evaluationId, idUser, userId);
+
+        return Ok(data);
+    }
 
 
     [HttpPost("insertAndRemoveList")]
