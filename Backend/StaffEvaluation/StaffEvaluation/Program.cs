@@ -32,6 +32,9 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectString"));
 });
 
+
+
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
@@ -88,12 +91,17 @@ builder.Services.AddAuthentication(x =>
 
 var app = builder.Build();
 
+
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseStaticFiles();
+
 
 app.UseHttpsRedirection();
 

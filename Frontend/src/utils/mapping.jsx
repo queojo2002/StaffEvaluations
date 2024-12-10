@@ -33,6 +33,8 @@ import EvaluationRatings from "~/pages/EvaluationRatings/EvaluationRatings";
 import EvaluationSample from "~/pages/EvaluationSample/EvaluationSample";
 import EvaluationConsolidationAndTransfer from "~/pages/Statistics/EvaluationConsolidationAndTransfer";
 import EvaluationStatistics from "~/pages/Statistics/EvaluationStatistics";
+import StatisticsUnit from "~/pages/Statistics/StatisticsUnit";
+import StatisticsUser from "~/pages/Statistics/StatisticsUser";
 import Users from "~/pages/Users/Users";
 import UserType from "~/pages/UserType/UserType";
 
@@ -72,5 +74,7 @@ export const componentsMapping = {
   "supervisor-evaluation": <SupervisorEvaluation />,
   roles: <Roles />,
   "consolidation-and-transfer": <EvaluationConsolidationAndTransfer />,
-  "evaluations-sample": <EvaluationSample />
+  "evaluations-sample": <EvaluationSample />,
+  "statistics-unit": <StatisticsUnit />,
+  "statistics-user": <StatisticsUser />
 };

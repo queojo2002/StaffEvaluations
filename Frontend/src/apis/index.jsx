@@ -13,6 +13,10 @@ export const refreshTokenAPI = async (access_token, refresh_token) => {
   });
 };
 
+export const analystOfUnit = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/analyst/analystOfUnit`, values);
+};
+
 export const getAllEvaluationSample = async () => {
   return await apiInstance.get(`${BACKEND_API}/api/v1/evaluationSample/getAll`);
 };
@@ -499,10 +503,7 @@ export const checkIsManagementMember = async () => {
 
 export const exportEvaluationDocument = async (evaluationId, templateType, outputFormat) => {
   return await apiInstance.get(
-    `${BACKEND_API}/api/v1/analyst/exportEvaluationDocument?evaluationId=${evaluationId}&templateType=${templateType}&outputFormat=${outputFormat}`,
-    {
-      responseType: "blob"
-    }
+    `${BACKEND_API}/api/v1/analyst/exportEvaluationDocument?evaluationId=${evaluationId}&templateType=${templateType}&outputFormat=${outputFormat}`
   );
 };
 
@@ -513,9 +514,7 @@ export const exportPdfOfUser = async (evaluationId) => {
 };
 
 export const exportExcelOfUser = async (evaluationId) => {
-  return await apiInstance.get(`${BACKEND_API}/api/v1/analyst/exportExcelOfUser?evaluationId=${evaluationId}`, {
-    responseType: "blob"
-  });
+  return await apiInstance.get(`${BACKEND_API}/api/v1/analyst/exportExcelOfUser?evaluationId=${evaluationId}`);
 };
 
 export const exportUserEvaluationDataToExcel = async (userId) => {

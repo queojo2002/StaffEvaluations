@@ -8,6 +8,7 @@ import ManagerExclusiveSection from "./EvaluationDetailsUserComponents/ManagerEx
 import NewAndUpdateEvaluationExplaint from "./EvaluationDetailsUserComponents/NewAndUpdateEvaluationExplaint";
 import SelfEvaluationResults from "./EvaluationDetailsUserComponents/SelfEvaluationResults";
 import SelfReviewAndQualityRating from "./EvaluationDetailsUserComponents/SelfReviewAndQualityRating";
+import WordViewer from "./WordViewer";
 
 import {
   checkIsManagementMember,
@@ -50,7 +51,7 @@ const EvaluationDetailsUserCustom = (props) => {
   const [isOpenEvaluationDetailsUserPrint, setIsOpenEvaluationDetailsUserPrint] = useState(false);
   const [nameCriteriaDisplay, setNameCriteriaDisplay] = useState("");
   const [explaintCategoryCriteriaId, setExplaintCategoryCriteriaId] = useState(null);
-
+  const [isOpenn, setIsOpenn] = useState(false);
   const fetchApiGetAll = async (evaluationId) => {
     setLoading(true);
     try {
@@ -802,6 +803,7 @@ const EvaluationDetailsUserCustom = (props) => {
               loading={loading}
               onClick={() => {
                 setIsOpenEvaluationDetailsUserPrint(true);
+                //setIsOpenn(true);
               }}
               icon={<SaveOutlined />}
               style={{ fontSize: 14, width: 130, height: 40, color: "white", backgroundColor: "#1890ff" }}
