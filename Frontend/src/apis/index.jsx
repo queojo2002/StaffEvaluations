@@ -1,5 +1,5 @@
 import apiInstance from "../utils/apiInstance";
-import { BACKEND_API } from "../utils/constants";
+import { BACKEND_API, BACKEND_SIGN_USB } from "../utils/constants";
 
 export const handleLogoutAPI = async () => {
   localStorage.removeItem("access_token");
@@ -15,6 +15,10 @@ export const refreshTokenAPI = async (access_token, refresh_token) => {
 
 export const analystOfUnit = async (values) => {
   return await apiInstance.post(`${BACKEND_API}/api/v1/analyst/analystOfUnit`, values);
+};
+
+export const analystOfUser = async (values) => {
+  return await apiInstance.post(`${BACKEND_API}/api/v1/analyst/analystOfUser`, values);
 };
 
 export const getAllEvaluationSample = async () => {
@@ -579,4 +583,8 @@ export const sendMailAPI = async (userId, evaluationId) => {
   return await apiInstance.get(
     `${BACKEND_API}/api/v1/evaluation/sendMail?userId=${userId}&evaluationId=${evaluationId}`
   );
+};
+
+export const testtt = async (values) => {
+  return await apiInstance.post(`${BACKEND_SIGN_USB}/signByUsbToken`, {});
 };

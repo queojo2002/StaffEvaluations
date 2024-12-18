@@ -23,7 +23,8 @@ import {
   getAllEvaluation,
   getAllEvaluationSample,
   getAllUnit,
-  removeEvaluation
+  removeEvaluation,
+  testtt
 } from "~/apis";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import arrayToTree from "~/utils/arrayToTree";
@@ -61,6 +62,13 @@ const Evaluation = () => {
         getAllCategoryCriteria(),
         getAllEvaluationSample()
       ]);
+
+      const res = await testtt();
+
+      // if (res.code === "ERR_NETWORK") {
+      //   openNotificationTopLeft("error", "Vui lòng mở phần mềm ký số lên", "");
+      //   return;
+      // }
 
       setDatas(data1.dataList);
       setDataUnit(data2.dataList);

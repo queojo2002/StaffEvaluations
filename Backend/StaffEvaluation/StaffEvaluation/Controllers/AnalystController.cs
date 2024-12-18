@@ -1214,6 +1214,156 @@ public class AnalystController : Controller
     }
 
 
+    [HttpPost("analystOfUser")]
+    [Authorize]
+    public async Task<IActionResult> AnalystOfUser(AnalystOfUserModel model)
+    {
+        try
+        {
+            if (model.UserId == Guid.Empty)
+            {
+                return Ok(new ApiResult().Failure<AnalystOfUnitModel>("Vui lòng chọn người dùng cần thống kê."));
+            }
+
+            var userCurrent = await _context.Users!.Where(e => e.Id == model.UserId).FirstOrDefaultAsync();
+
+            if (userCurrent == null)
+            {
+                return Ok(new ApiResult().Failure<AnalystOfUnitModel>("Người dùng cần thống kê không hợp lệ."));
+            }
+
+            var units = await _unitRepository.GetAllChildOfUnitAsync(userCurrent.UnitId);
+
+            if (units.DataList == null || units.DataList.Length == 0)
+            {
+                return Ok(new ApiResult().Failure<AnalystOfUnitModel>("Người dùng này có đơn vị không hợp lệ."));
+            }
+
+            int totalEvaluation = 0;
+            int totalUser = 0;
+            int totalKHTNV = 0;
+            int totalHTNV = 0;
+            int totalHTTNV = 0;
+            int totalHTXSNV = 0;
+
+
+            List<Guid> userIds = new List<Guid>();
+
+            List<AnalystOfUnitResponseModel> analystOfUnits = new List<AnalystOfUnitResponseModel>();
+
+            var evaluations = await _context.Evaluations.Where(e => units.DataList.Select(e => e.Id).Contains(e.UnitId) && !e.IsDeleted).ToListAsync();
+
+            foreach (var evaluation in evaluations)
+            {
+                if (evaluation.CategoryTimeTypeId == null) continue;
+
+                var ctt = await _context.CategoryTimeTypes.Where(e => e.Id == evaluation.CategoryTimeTypeId).FirstOrDefaultAsync();
+
+                if (ctt == null) continue;
+
+                if (ctt.FromDate.Date >= model.StartTime.Date &&
+                    ctt.ToDate.Date <= model.EndTime.Date &&
+                    ctt.FromDate.Date >= model.StartTime.Date &&
+                    ctt.ToDate.Date <= model.EndTime.Date)
+                {
+
+                    var evaluationUser = await _context.EvaluationUsers.Where(e => e.EvaluationId == evaluation.Id && e.Type == 1 && !e.IsDeleted).ToListAsync();
+
+                    var supervisor = await _context.EvaluationUsers.Where(e => e.EvaluationId == evaluation.Id && e.Type == 2 && !e.IsDeleted).OrderByDescending(e => e.Sort).FirstOrDefaultAsync();
+
+                    if (supervisor == null) continue;
+
+                    totalEvaluation += 1;
+
+                    foreach (var user in evaluationUser)
+                    {
+
+                        if (user!.UserId != userCurrent.Id)
+                        {
+                            continue;
+                        }
+
+                        if (!userIds.Contains(user.UserId))
+                        {
+                            userIds.Add(user.UserId);
+                        }
+
+                        var edp = await _context.EvaluationDetailsPersonals.Where(e => e.EvaluationId == evaluation.Id && e.UserId == user.UserId && e.Status >= 2).ToListAsync();
+
+                        if (edp == null || edp.Count == 0) continue;
+
+                        var eds = await _context.EvaluationDetailsSupervisors.Where(e =>
+                                                                                    e.EvaluationId == evaluation.Id &&
+                                                                                    e.UserSupervisorId == supervisor.UserId &&
+                                                                                    edp.Select(e => e.Id).Contains(e.EvaluationDetailsPersonalId) &&
+                                                                                    e.Status >= 2).ToListAsync();
+
+                        if (eds == null || eds.Count == 0) continue;
+
+                        int tongDiemUser = edp.Sum(e => e.AssessmentValue);
+                        int tongDiemSupervisor = eds.Sum(e => e.AssessmentValueSupervisor);
+
+                        var unit = await _context.Units!.Where(e => e.Id == evaluation.UnitId).FirstOrDefaultAsync();
+                        var getUser = await _context.Users!.Where(e => e.Id == user.UserId).FirstOrDefaultAsync();
+
+                        if (tongDiemSupervisor >= 90)
+                        {
+                            totalHTXSNV += 1;
+                        }
+                        else if (tongDiemSupervisor >= 70)
+                        {
+                            totalHTTNV += 1;
+                        }
+                        else if (tongDiemSupervisor >= 60)
+                        {
+                            totalHTNV += 1;
+                        }
+                        else
+                        {
+                            totalKHTNV += 1;
+                        }
+
+
+
+                        AnalystOfUnitResponseModel analyst = new AnalystOfUnitResponseModel()
+                        {
+                            EvaluationName = evaluation.EvaluationName,
+                            UnitName = unit!.UnitName,
+                            FullName = getUser!.FullName,
+                            AssessmentValue = tongDiemUser,
+                            AssessmentValueSupervisor = tongDiemSupervisor
+                        };
+                        analystOfUnits.Add(analyst);
+                    }
+                }
+            }
+
+
+            totalUser = userIds.Count;
+
+
+            AnalystOfUnitsModel analystOfUnitsModel = new AnalystOfUnitsModel()
+            {
+
+                TotalEvaluation = totalEvaluation,
+                TotalUser = totalUser,
+                TotalKHTNV = totalKHTNV,
+                TotalHTNV = totalHTNV,
+                TotalHTTNV = totalHTTNV,
+                TotalHTXSNV = totalHTXSNV,
+                AnalystOfUnitsRespons = analystOfUnits
+            };
+
+            return Ok(new Pagination().HandleGetByIdRespond(analystOfUnitsModel));
+
+
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+    }
 
 
 

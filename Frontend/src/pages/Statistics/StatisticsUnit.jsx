@@ -1,44 +1,26 @@
 import { useEffect, useState } from "react";
-import { GrSearch } from "react-icons/gr";
-import { IoFilterSharp } from "react-icons/io5";
 import { Pie } from "@ant-design/charts";
-import {
-  CheckCircleOutlined,
-  FileExcelOutlined,
-  FilePdfOutlined,
-  FileWordOutlined,
-  SearchOutlined
-} from "@ant-design/icons";
+import { FileWordOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
   Col,
   DatePicker,
   Divider,
-  Flex,
   Form,
-  Input,
-  List,
   Row,
   Space,
   Spin,
   Table,
   Tag,
-  Tooltip,
   TreeSelect,
   Typography
 } from "antd";
-import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
 
 import { renderTreeUnit } from "../Units/Units";
 
-import {
-  analystOfUnit,
-  exportAnalystConsolidationAndTransfer,
-  getAllEvaluationConsolidationAndTransferCompleted,
-  getAllUnit
-} from "~/apis";
+import { analystOfUnit, exportAnalystConsolidationAndTransfer, getAllUnit } from "~/apis";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import arrayToTree from "~/utils/arrayToTree";
 import { getGradingName } from "~/utils/getGradingName";
@@ -214,24 +196,24 @@ const StatisticsUnit = () => {
             <Col span={12}>
               <Title level={5}>Thông tin thống kê</Title>
               <ul>
-                <li>Tổng số phiếu đánh giá: {totalPhieuDanhGia}</li>
-                <li>Tổng số người tham gia: {totalNguoiThamGia}</li>
-                <li>
+                <li style={{ paddingBottom: 10 }}>Tổng số phiếu đánh giá: {totalPhieuDanhGia}</li>
+                <li style={{ paddingBottom: 10 }}>Tổng số người tham gia: {totalNguoiThamGia}</li>
+                <li style={{ paddingBottom: 10 }}>
                   Số lượng HTXSNV: {totalHTXSNV} ({percentHTXSNV}%)
                 </li>
-                <li>
+                <li style={{ paddingBottom: 10 }}>
                   Số lượng HTTNV: {totalHTTNV} ({percentHTTNV}%)
                 </li>
-                <li>
+                <li style={{ paddingBottom: 10 }}>
                   Số lượng HTNV: {totalHTNV} ({percentHTNV}%)
                 </li>
-                <li>
+                <li style={{ paddingBottom: 10 }}>
                   Số lượng KHTNV: {totalKHTNV} ({percentKHTNV}%)
                 </li>
               </ul>
             </Col>
             <Col span={12}>
-              <Pie {...chartConfig} /> {/* Render Pie Chart here */}
+              <Pie {...chartConfig} />
             </Col>
           </Row>
         </div>
@@ -327,25 +309,6 @@ const StatisticsUnit = () => {
           </Card>
         ) : null}
       </Space>
-
-      {/* <Flex gap="middle" vertical>
-        <Flex align="center" gap={10} justify="space-between" style={{ width: "100%" }}>
-          <Flex align="center" gap={5} justify="flex-start" style={{ width: "100%" }}>
-            <TreeSelect
-              placeholder={"Chọn đơn vị"}
-              showSearch
-              treeNodeFilterProp={"title"}
-              maxTagCount={"responsive"}
-              treeLine={true}
-              treeData={renderTreeUnit(dataUnit)}
-              style={{ height: 40, width: "100%" }}
-            />
-          </Flex>
-        </Flex>
-        <Card bordered={false} className="criclebox">
-          <Table {...propsTable} />
-        </Card>
-      </Flex> */}
     </Spin>
   );
 };
