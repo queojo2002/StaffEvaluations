@@ -26,7 +26,7 @@ public class CategoryCriteriaController : Controller
     {
         var unitCurrentId = Guid.Parse(HttpContext.User.FindFirst("UnitId")!.Value);
 
-        var get = await _categoryCriteriaRepository.GetAllOfUnit(unitCurrentId);
+        var get = await _categoryCriteriaRepository.GetAllPagedAsync(0, 0);
 
         return Ok(get);
     }

@@ -63,13 +63,6 @@ const Evaluation = () => {
         getAllEvaluationSample()
       ]);
 
-      const res = await testtt();
-
-      // if (res.code === "ERR_NETWORK") {
-      //   openNotificationTopLeft("error", "Vui lòng mở phần mềm ký số lên", "");
-      //   return;
-      // }
-
       setDatas(data1.dataList);
       setDataUnit(data2.dataList);
       setDataCategoryTimeType(data3.dataList);
