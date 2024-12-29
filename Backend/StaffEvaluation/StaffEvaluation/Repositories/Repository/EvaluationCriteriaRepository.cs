@@ -95,11 +95,17 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
             Guid? parentId = null;
             int endValue = 0;
 
+
             var categoryCriteria = await _context.CategoryCriterias.Where(cc => cc.Id == item.CategoryCriteriaId).FirstOrDefaultAsync();
 
             if (categoryCriteria == null)
             {
                 return new ApiResult().Failure<EvaluationDetailsModel>("Có lỗi khi lấy dữ liệu phiếu đánh giá này.");
+            }
+
+            if (item.Id.ToString() == "f160af9e-de25-45e3-b8df-530d1b6b7fcf")
+            {
+                Console.WriteLine("1");
             }
 
             criteriaName = categoryCriteria.CriteriaName ?? "";
@@ -185,7 +191,11 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
             var key = item.Id.ToString() ?? string.Empty;
 
             map[key] = item;
+        }
 
+
+        foreach (var item in criteriaDataModels)
+        {
             var parentId = item.ParentId?.ToString();
 
             if (string.IsNullOrEmpty(parentId) || !map.ContainsKey(parentId))
@@ -197,6 +207,7 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
                 var parentItem = map[parentId];
 
                 parentItem.Children.Add(item);
+
             }
         }
 
@@ -427,6 +438,11 @@ public class EvaluationCriteriaRepository : IEvaluationCriteriaRepository
             var key = item.Id.ToString() ?? string.Empty;
 
             map[key] = item;
+
+        }
+
+        foreach (var item in criteriaDataModels)
+        {
 
             var parentId = item.ParentId?.ToString();
 

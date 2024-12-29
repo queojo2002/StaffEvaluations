@@ -1199,7 +1199,7 @@ public class AnalystController : Controller
                 TotalHTNV = totalHTNV,
                 TotalHTTNV = totalHTTNV,
                 TotalHTXSNV = totalHTXSNV,
-                AnalystOfUnitsRespons = analystOfUnits
+                AnalystOfUnitsRespons = analystOfUnits.OrderBy(e => e.UnitName).ThenBy(e => e.EvaluationName).ToList()
             };
 
             return Ok(new Pagination().HandleGetByIdRespond(analystOfUnitsModel));

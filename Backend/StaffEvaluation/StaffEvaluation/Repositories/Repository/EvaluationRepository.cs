@@ -559,7 +559,7 @@ public class EvaluationRepository : IEvaluationRepository
             Status = e.Status,
             IsDeleted = e.IsDeleted,
             UpdatedAt = e.UpdatedAt
-        }).ToList();
+        }).OrderBy(e => e.UnitName).ThenBy(e => e.EvaluationName).ToList();
 
         return new Pagination().HandleGetAllRespond(0, 0, result, result.Count);
     }
